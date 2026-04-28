@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Initial Assessment - Neurovia</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:520px;margin:auto;">
+      <div id="progressDots" class="progress-dots"></div>
+      <p id="progressLabel" class="muted" style="text-align:center;"></p>
+      <h1 id="questionTitle" class="question-title"></h1>
+      <p class="question-subtitle" style="text-align:center;">Answer honestly to personalize your dashboard.</p>
+
+      <div id="questionInputArea"></div>
+      <p id="onboardingMessage" class="message-text"></p>
+
+      <div class="row two" style="margin-top:18px;">
+        <button id="backBtn" class="secondary-btn" type="button">Back</button>
+        <button id="nextBtn" class="primary-btn" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/onboarding.js"></script>
+</body>
+</html>

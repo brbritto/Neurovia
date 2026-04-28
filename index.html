@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neurovia</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:430px;margin:auto;">
+      <div class="logo-circle"><i class="mdi mdi-brain"></i></div>
+      <h1 class="brand-title">Neuro<span>via</span></h1>
+      <p class="brand-subtitle">Monitor cognition, recovery and performance in one place.</p>
+
+      <form id="loginForm">
+        <div class="input-row">
+          <label>Email</label>
+          <div class="input-box">
+            <i class="mdi mdi-email-outline"></i>
+            <input id="email" type="email" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>Password</label>
+          <div class="input-box">
+            <i class="mdi mdi-lock-outline"></i>
+            <input id="password" type="password" />
+          </div>
+        </div>
+
+        <button class="primary-btn" type="submit">Sign In</button>
+        <p id="loginMessage" class="message-text"></p>
+      </form>
+
+      <div style="margin-top:18px;text-align:center;">
+        <button id="createAccountBtn" class="secondary-btn" type="button">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app-login.js"></script>
+</body>
+</html>

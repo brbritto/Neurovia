@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Update - Neurovia</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:520px;margin:auto;">
+      <h1 class="section-title">Daily Data Update</h1>
+      <p class="section-subtitle">Fill in today's data. This will update your scores, graphs and recommendations.</p>
+
+      <form id="dailyUpdateForm">
+        <div class="input-row"><label>What time did you sleep today?</label><div class="input-box"><input id="sleepTime" type="time"></div></div>
+        <div class="input-row"><label>What time did you wake up today?</label><div class="input-box"><input id="wakeTime" type="time"></div></div>
+        <div class="input-row"><label>How many liters of water did you drink today?</label><div class="input-box"><input id="waterLiters" type="number" step="0.1"></div></div>
+        <div class="input-row"><label>Did you exercise today?</label><div class="input-box"><select id="exerciseToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>How many hours did you study today?</label><div class="input-box"><input id="studyHoursToday" type="number" step="0.5"></div></div>
+        <div class="input-row"><label>Did you eat breakfast today?</label><div class="input-box"><select id="breakfastToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>Did you have difficulty sleeping today?</label><div class="input-box"><select id="difficultyToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>Did you feel mental fatigue today?</label><div class="input-box"><select id="fatigueToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>How stressed did you feel today? (1 to 10)</label><div class="input-box"><input id="stressToday" type="number" min="1" max="10"></div></div>
+        <div class="input-row"><label>How rested did you feel on waking today? (0 to 4)</label><div class="input-box"><input id="restedToday" type="number" min="0" max="4"></div></div>
+        <div class="input-row"><label>How distracting was your study environment today? (0 to 4)</label><div class="input-box"><input id="environmentToday" type="number" min="0" max="4"></div></div>
+        <div class="input-row"><label>How many hours of screen use did you have before sleep today?</label><div class="input-box"><input id="screenHoursToday" type="number" step="0.5"></div></div>
+        <div class="input-row"><label>How often did you take breaks while studying today? (0 to 4)</label><div class="input-box"><input id="breaksToday" type="number" min="0" max="4"></div></div>
+
+        <button class="primary-btn" type="submit">Save today's data</button>
+        <button class="secondary-btn" type="button" onclick="window.location.href='dashboard.html'">Back to dashboard</button>
+        <p id="dailyUpdateMessage" class="message-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/daily-update.js"></script>
+</body>
+</html>

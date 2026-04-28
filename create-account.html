@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:430px;margin:auto;">
+      <div class="logo-circle"><i class="mdi mdi-account-plus-outline"></i></div>
+      <h1 class="brand-title">Create <span>Account</span></h1>
+      <p class="brand-subtitle">Start with what is bothering you most right now.</p>
+
+      <form id="createForm">
+        <div class="input-row">
+          <label>Full name</label>
+          <div class="input-box">
+            <i class="mdi mdi-account-outline"></i>
+            <input id="name" type="text" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>Email</label>
+          <div class="input-box">
+            <i class="mdi mdi-email-outline"></i>
+            <input id="email" type="email" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>Password</label>
+          <div class="input-box">
+            <i class="mdi mdi-lock-outline"></i>
+            <input id="password" type="password" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>Confirm password</label>
+          <div class="input-box">
+            <i class="mdi mdi-lock-check-outline"></i>
+            <input id="confirmPassword" type="password" />
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>What best describes your main concern right now?</label>
+          <div class="input-box">
+            <i class="mdi mdi-comment-alert-outline"></i>
+            <select id="mainConcern">
+              <option value="I feel exhausted">I feel exhausted</option>
+              <option value="I can’t focus">I can’t focus</option>
+              <option value="I wake up tired">I wake up tired</option>
+              <option value="I feel mentally overloaded">I feel mentally overloaded</option>
+              <option value="My routine feels unstable">My routine feels unstable</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="primary-btn" type="submit">Create Account</button>
+        <p id="createMessage" class="message-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/create-account.js"></script>
+</body>
+</html>

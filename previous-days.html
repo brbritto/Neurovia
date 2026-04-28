@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Update Previous Days - Neurovia</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:520px;margin:auto;">
+      <h1 class="section-title">Update Previous Days</h1>
+      <p class="section-subtitle">Choose a previous day and update only that day.</p>
+
+      <form id="previousDayForm">
+        <div class="input-row"><label>Select day</label><div class="input-box"><input id="selectedDate" type="date"></div></div>
+        <div class="input-row"><label>What time did you sleep?</label><div class="input-box"><input id="sleepTime" type="time"></div></div>
+        <div class="input-row"><label>What time did you wake up?</label><div class="input-box"><input id="wakeTime" type="time"></div></div>
+        <div class="input-row"><label>How many liters of water did you drink?</label><div class="input-box"><input id="waterLiters" type="number" step="0.1"></div></div>
+        <div class="input-row"><label>Did you exercise?</label><div class="input-box"><select id="exerciseToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>How many hours did you study?</label><div class="input-box"><input id="studyHoursToday" type="number" step="0.5"></div></div>
+        <div class="input-row"><label>Did you eat breakfast?</label><div class="input-box"><select id="breakfastToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>Did you have difficulty sleeping?</label><div class="input-box"><select id="difficultyToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>Did you feel fatigue?</label><div class="input-box"><select id="fatigueToday"><option value="Yes">Yes</option><option value="No">No</option></select></div></div>
+        <div class="input-row"><label>Stress today (1 to 10)</label><div class="input-box"><input id="stressToday" type="number" min="1" max="10"></div></div>
+        <div class="input-row"><label>Rested on waking (0 to 4)</label><div class="input-box"><input id="restedToday" type="number" min="0" max="4"></div></div>
+        <div class="input-row"><label>Study environment (0 to 4)</label><div class="input-box"><input id="environmentToday" type="number" min="0" max="4"></div></div>
+        <div class="input-row"><label>Screen hours before sleep</label><div class="input-box"><input id="screenHoursToday" type="number" step="0.5"></div></div>
+        <div class="input-row"><label>Break frequency (0 to 4)</label><div class="input-box"><input id="breaksToday" type="number" min="0" max="4"></div></div>
+
+        <button class="primary-btn" type="submit">Save selected day</button>
+        <button class="secondary-btn" type="button" onclick="window.location.href='dashboard.html'">Back to dashboard</button>
+        <p id="previousDayMessage" class="message-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/previous-days.js"></script>
+</body>
+</html>

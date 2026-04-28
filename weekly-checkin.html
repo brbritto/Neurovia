@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Check-In - Neurovia</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
+  <link rel="stylesheet" href="css/personalizado.css" />
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="screen-container">
+    <div class="hero-card" style="max-width:520px;margin:auto;">
+      <h1 class="section-title">Weekly Check-In</h1>
+      <p class="section-subtitle">Tell us how this week felt overall. This helps the app connect your data to your real experience.</p>
+
+      <form id="weeklyCheckinForm">
+        <div class="input-row">
+          <label>How was your energy this week?</label>
+          <div class="input-box">
+            <select id="energyWeek">
+              <option value="Better">Better</option>
+              <option value="Same">Same</option>
+              <option value="Worse">Worse</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>How was your focus this week?</label>
+          <div class="input-box">
+            <select id="focusWeek">
+              <option value="Better">Better</option>
+              <option value="Same">Same</option>
+              <option value="Worse">Worse</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>How was your stress this week?</label>
+          <div class="input-box">
+            <select id="stressWeek">
+              <option value="Lower">Lower</option>
+              <option value="Same">Same</option>
+              <option value="Higher">Higher</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <label>What felt like your biggest issue this week?</label>
+          <div class="input-box">
+            <input id="mainIssueWeek" type="text" placeholder="Example: waking up tired" />
+          </div>
+        </div>
+
+        <button class="primary-btn" type="submit">Save weekly check-in</button>
+        <button class="secondary-btn" type="button" onclick="window.location.href='dashboard.html'">Back to dashboard</button>
+        <p id="weeklyCheckinMessage" class="message-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/weekly-checkin.js"></script>
+</body>
+</html>

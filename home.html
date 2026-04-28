@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neurovia Home</title>
+  <link rel="stylesheet" href="css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="css/personalizado.css">
+</head>
+<body>
+  <div class="screen-container">
+    <div class="background-glow glow-1"></div>
+    <div class="background-glow glow-2"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="main-card home-card">
+      <div class="home-top">
+        <div>
+          <div class="brand-badge">WELCOME BACK</div>
+          <h1 id="welcomeText" class="brand-title">Neuro<span>via</span></h1>
+        </div>
+        <button id="logoutBtn" class="small-btn">Log Out</button>
+      </div>
+
+      <p class="brand-subtitle">
+        You have completed your initial assessment. This is your temporary home screen.
+      </p>
+
+      <div class="info-box">
+        <h3>Assessment Status</h3>
+        <p id="statusText">Loading...</p>
+      </div>
+
+      <div class="info-box">
+        <h3>Your Answers</h3>
+        <div id="answersList" class="answers-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>
