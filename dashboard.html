@@ -1,33 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neurovia Dashboard</title>
-  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
-  <link rel="stylesheet" href="css/personalizado.css" />
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Neurovia</title>
+
+  <link
+    rel="stylesheet"
+    href="css/materialdesignicons.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/personalizado.css"
+  >
 </head>
+
 <body>
+
   <div class="grid-overlay"></div>
 
   <div class="screen-container">
+
     <section id="homeTab"></section>
-    <section id="analysisTab" class="hidden"></section>
-    <section id="improvementTab" class="hidden"></section>
-    <section id="profileTab" class="hidden"></section>
+
+    <section
+      id="calendarTab"
+      class="hidden"
+    ></section>
+
+    <section
+      id="journalTab"
+      class="hidden"
+    ></section>
+
+    <section
+      id="profileTab"
+      class="hidden"
+    ></section>
+
   </div>
 
   <nav class="tabbar">
-    <button class="tab-btn active" data-tab="home"><i class="mdi mdi-home-outline"></i>Home</button>
-    <button class="tab-btn" data-tab="analysis"><i class="mdi mdi-chart-bar"></i>Analysis</button>
-    <button class="tab-btn" data-tab="improvement"><i class="mdi mdi-trending-up"></i>Improvement</button>
-    <button class="tab-btn" data-tab="profile"><i class="mdi mdi-account-outline"></i>Profile</button>
+
+    <button
+      class="tab-btn active"
+      data-tab="home"
+    >
+      <i class="mdi mdi-brain"></i>
+      Today
+    </button>
+
+    <button
+      class="tab-btn"
+      data-tab="calendar"
+    >
+      <i class="mdi mdi-calendar-month-outline"></i>
+      Calendar
+    </button>
+
+    <button
+      class="tab-btn"
+      data-tab="journal"
+    >
+      <i class="mdi mdi-notebook-outline"></i>
+      Journal
+    </button>
+
+    <button
+      class="tab-btn"
+      data-tab="profile"
+    >
+      <i class="mdi mdi-account-outline"></i>
+      Profile
+    </button>
+
   </nav>
 
   <script src="js/storage.js"></script>
   <script src="js/questions.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/insights.js"></script>
+
+  <script src="js/brain-calendar.js"></script>
+  <script src="js/brain-journal.js"></script>
+  <script src="js/recovery-tools.js"></script>
+
   <script src="js/dashboard.js"></script>
+
 </body>
 </html>
