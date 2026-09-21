@@ -1,48 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Neurovia</title>
-  <link rel="stylesheet" href="css/materialdesignicons.min.css" />
-  <link rel="stylesheet" href="css/personalizado.css" />
+
+  <link
+    rel="stylesheet"
+    href="css/materialdesignicons.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/personalizado.css"
+  >
 </head>
+
 <body>
+
   <div class="grid-overlay"></div>
-  <div class="screen-container">
-    <div class="hero-card" style="max-width:430px;margin:auto;">
-      <div class="logo-circle"><i class="mdi mdi-brain"></i></div>
-      <h1 class="brand-title">Neuro<span>via</span></h1>
-      <p class="brand-subtitle">Monitor cognition, recovery and performance in one place.</p>
 
-      <form id="loginForm">
-        <div class="input-row">
-          <label>Email</label>
-          <div class="input-box">
-            <i class="mdi mdi-email-outline"></i>
-            <input id="email" type="email" />
-          </div>
+  <main class="screen-container">
+
+    <div class="landing-shell">
+
+      <section class="hero-card landing-hero">
+
+        <div class="logo-circle">
+          <i class="mdi mdi-brain"></i>
         </div>
 
-        <div class="input-row">
-          <label>Password</label>
-          <div class="input-box">
-            <i class="mdi mdi-lock-outline"></i>
-            <input id="password" type="password" />
-          </div>
+        <p class="muted landing-label">
+          COGNITIVE WELLNESS
+        </p>
+
+        <h1 class="brand-title">
+          Neuro<span>via</span>
+        </h1>
+
+        <h2 class="landing-headline">
+          Understand how your brain is doing today.
+        </h2>
+
+        <p class="brand-subtitle">
+          Neurovia connects sleep, stress, energy,
+          workload and focus to help you understand
+          your cognitive patterns and what you can
+          do next.
+        </p>
+
+        <div class="landing-actions">
+
+          <button
+            id="getStartedBtn"
+            class="primary-btn"
+            type="button"
+          >
+            Get Started
+          </button>
+
+          <button
+            id="loginBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Log In
+          </button>
+
         </div>
 
-        <button class="primary-btn" type="submit">Sign In</button>
-        <p id="loginMessage" class="message-text"></p>
-      </form>
+      </section>
 
-      <div style="margin-top:18px;text-align:center;">
-        <button id="createAccountBtn" class="secondary-btn" type="button">Create Account</button>
-      </div>
+
+      <section class="card">
+
+        <p class="muted">
+          WHAT NEUROVIA ANSWERS
+        </p>
+
+        <div class="landing-question-grid">
+
+          <div class="landing-question">
+
+            <i class="mdi mdi-brain"></i>
+
+            <strong>
+              What's my brain like today?
+            </strong>
+
+            <p>
+              Brain Readiness summarizes your
+              current cognitive state from your
+              daily signals.
+            </p>
+
+          </div>
+
+
+          <div class="landing-question">
+
+            <i class="mdi mdi-magnify"></i>
+
+            <strong>
+              Why do I feel this way?
+            </strong>
+
+            <p>
+              See whether sleep, stress, workload
+              or recovery may be contributing to
+              today's pattern.
+            </p>
+
+          </div>
+
+
+          <div class="landing-question">
+
+            <i class="mdi mdi-lightning-bolt-outline"></i>
+
+            <strong>
+              What can I do about it?
+            </strong>
+
+            <p>
+              Get one concrete action based on
+              the strongest signal in your data.
+            </p>
+
+          </div>
+
+
+          <div class="landing-question">
+
+            <i class="mdi mdi-chart-line"></i>
+
+            <strong>
+              Am I improving over time?
+            </strong>
+
+            <p>
+              Daily check-ins, your Brain Calendar
+              and Journal help reveal changes and
+              recurring patterns.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <p class="muted">
+          BUILT FOR UNDERSTANDING, NOT DIAGNOSIS
+        </p>
+
+        <p class="section-subtitle">
+          Neurovia estimates cognitive wellness
+          patterns from self-reported behavioral
+          data. It does not diagnose medical
+          conditions or claim to directly measure
+          biomarkers.
+        </p>
+
+      </section>
+
     </div>
-  </div>
 
-  <script src="js/storage.js"></script>
-  <script src="js/app-login.js"></script>
+  </main>
+
+
+  <script>
+
+    document
+      .getElementById("getStartedBtn")
+      .addEventListener("click", function () {
+
+        window.location.href =
+          "create-account.html";
+
+      });
+
+
+    document
+      .getElementById("loginBtn")
+      .addEventListener("click", function () {
+
+        window.location.href =
+          "login.html";
+
+      });
+
+  </script>
+
 </body>
 </html>
