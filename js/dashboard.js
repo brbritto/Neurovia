@@ -5,12 +5,10 @@ document.addEventListener(
     let user =
       getCurrentUserObject();
 
-
     if (
       !user ||
       !user.onboardingCompleted
     ) {
-
       window.location.href =
         "index.html";
 
@@ -23,18 +21,15 @@ document.addEventListener(
         "homeTab"
       );
 
-
     const calendarTab =
       document.getElementById(
         "calendarTab"
       );
 
-
     const journalTab =
       document.getElementById(
         "journalTab"
       );
-
 
     const profileTab =
       document.getElementById(
@@ -43,92 +38,94 @@ document.addEventListener(
 
 
     function refreshUser() {
-
       user =
         getCurrentUserObject();
 
-
-      ensureBrainCalendar(
-        user
-      );
-
-
-      ensureBrainJournal(
-        user
-      );
+      ensureBrainCalendar(user);
+      ensureBrainJournal(user);
     }
 
 
     function getDates() {
-
       return Object
         .keys(
-          user.dailyLogs ||
-          {}
+          user.dailyLogs || {}
         )
         .sort();
     }
 
 
     function getLatest() {
-
       const dates =
         getDates();
 
-
-      if (
-        !dates.length
-      ) {
-
+      if (!dates.length) {
         return null;
       }
-
 
       const date =
         dates[
           dates.length - 1
         ];
 
-
       return {
-
         date,
 
         log:
           user.dailyLogs[
             date
           ]
-
       };
     }
 
 
-    function formatDateKey(
-      key
-    ) {
-
+    function formatDateKey(key) {
       const date =
-        dateFromKey(
-          key
-        );
-
+        dateFromKey(key);
 
       if (!date) {
         return key;
       }
 
-
       return date.toLocaleDateString(
         "en-US",
         {
-          month:
-            "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }
+      );
+    }
 
-          day:
-            "numeric",
 
-          year:
-            "numeric"
+    function formatTime(time) {
+      if (!time) {
+        return "";
+      }
+
+      const [
+        hours,
+        minutes
+      ] =
+        time
+          .split(":")
+          .map(Number);
+
+      const date =
+        new Date();
+
+      date.setHours(
+        hours,
+        minutes,
+        0,
+        0
+      );
+
+      return date.toLocaleTimeString(
+        "en-US",
+        {
+          hour: "numeric",
+          minute: "2-digit"
         }
       );
     }
@@ -139,7 +136,6 @@ document.addEventListener(
       value,
       note = ""
     ) {
-
       return `
         <div class="metric-card">
 
@@ -154,16 +150,16 @@ document.addEventListener(
           ${
             note
               ? `
-                  <div
-                    class="muted"
-                    style="
-                      margin-top:6px;
-                      font-size:13px;
-                    "
-                  >
-                    ${note}
-                  </div>
-                `
+                <div
+                  class="muted"
+                  style="
+                    margin-top:6px;
+                    font-size:13px;
+                  "
+                >
+                  ${note}
+                </div>
+              `
               : ""
           }
 
@@ -172,27 +168,19 @@ document.addEventListener(
     }
 
 
-    function riskClass(
-      tier
-    ) {
-
+    function riskClass(tier) {
       if (
-        tier ===
-        "High"
+        tier === "Super High" ||
+        tier === "High"
       ) {
-
         return "risk-high";
       }
 
-
       if (
-        tier ===
-        "Moderate"
+        tier === "Moderate"
       ) {
-
         return "risk-moderate";
       }
-
 
       return "risk-low";
     }
@@ -205,18 +193,12 @@ document.addEventListener(
     */
 
     function renderHome() {
-
       refreshUser();
-
 
       const latest =
         getLatest();
 
-
-      if (
-        !latest
-      ) {
-
+      if (!latest) {
         homeTab.innerHTML = `
 
           <div class="hero-card">
@@ -247,18 +229,15 @@ document.addEventListener(
           </div>
         `;
 
-
         document
           .getElementById(
             "firstDailyBtn"
           )
           .onclick =
           function () {
-
             window.location.href =
               "daily-update.html";
           };
-
 
         return;
       }
@@ -266,7 +245,6 @@ document.addEventListener(
 
       const scores =
         latest.log.scores;
-
 
       const recentLogs =
         getDates()
@@ -278,7 +256,6 @@ document.addEventListener(
               ]
           );
 
-
       const insight =
         buildMainInsight(
           user,
@@ -287,12 +264,8 @@ document.addEventListener(
           recentLogs
         );
 
-
       const recovery =
-        buildRecoveryTool(
-          user
-        );
-
+        buildRecoveryTool(user);
 
       const sleepDebt =
         calculateWeeklySleepDebt(
@@ -323,19 +296,15 @@ document.addEventListener(
           </div>
 
           <p class="section-subtitle">
-
             ${
               classifyReadiness(
                 scores.brainReadiness ??
                 scores.overall
               )
             }
-
           </p>
 
-
           <div class="bar-bg">
-
             <div
               class="bar-fill"
               style="
@@ -345,7 +314,6 @@ document.addEventListener(
                 }%;
               "
             ></div>
-
           </div>
 
         </div>
@@ -355,26 +323,21 @@ document.addEventListener(
 
           ${metricCard(
             "Recovery",
-            scores.recovery ??
-            "--",
+            scores.recovery ?? "--",
             "recharge"
           )}
 
-
           ${metricCard(
             "Cognitive Load",
-            scores.cognitiveLoad ??
-            "--",
+            scores.cognitiveLoad ?? "--",
             "mental demand"
           )}
-
 
           ${metricCard(
             "Sleep Debt",
             `${sleepDebt}h`,
             "recent"
           )}
-
 
           ${metricCard(
             "Focus",
@@ -405,9 +368,7 @@ document.addEventListener(
         </div>
 
 
-        <div
-          class="recommendation-card"
-        >
+        <div class="recommendation-card">
 
           <p class="muted">
             ONE THING TO DO
@@ -423,28 +384,26 @@ document.addEventListener(
         ${
           recovery
             ? `
-                <div class="card">
+              <div class="card">
 
-                  <p class="muted">
-                    RECOVERY TOOL
-                  </p>
+                <p class="muted">
+                  RECOVERY TOOL
+                </p>
 
-                  <h2>
-                    ${recovery.type}
-                  </h2>
+                <h2>
+                  ${recovery.type}
+                </h2>
 
-                  <p>
-                    ${recovery.reason}
-                  </p>
+                <p>
+                  ${recovery.reason}
+                </p>
 
-                  <div
-                    class="recovery-action"
-                  >
-                    ${recovery.action}
-                  </div>
-
+                <div class="recovery-action">
+                  ${recovery.action}
                 </div>
-              `
+
+              </div>
+            `
             : ""
         }
 
@@ -458,98 +417,63 @@ document.addEventListener(
           <div class="signal-grid">
 
             <div>
-
-              <span>
-                Sleep
-              </span>
-
+              <span>Sleep</span>
               <strong>
                 ${
                   scores.sleepHours ??
                   "--"
                 }h
               </strong>
-
             </div>
 
-
             <div>
-
-              <span>
-                Sleep quality
-              </span>
-
+              <span>Sleep quality</span>
               <strong>
                 ${
                   latest.log.sleepQuality ??
                   "--"
                 }/10
               </strong>
-
             </div>
 
-
             <div>
-
-              <span>
-                Stress
-              </span>
-
+              <span>Stress</span>
               <strong>
                 ${
                   latest.log.stressLevel ??
                   "--"
                 }/10
               </strong>
-
             </div>
 
-
             <div>
-
-              <span>
-                Energy
-              </span>
-
+              <span>Energy</span>
               <strong>
                 ${
                   latest.log.energyLevel ??
                   "--"
                 }/10
               </strong>
-
             </div>
 
-
             <div>
-
-              <span>
-                Workload
-              </span>
-
+              <span>Workload</span>
               <strong>
                 ${
                   latest.log.workloadLevel ??
                   "--"
                 }/10
               </strong>
-
             </div>
 
-
             <div>
-
-              <span>
-                Focus
-              </span>
-
+              <span>Focus</span>
               <strong>
                 ${
                   latest.log.focusLevel ??
                   "--"
                 }/10
               </strong>
-
             </div>
 
           </div>
@@ -573,7 +497,6 @@ document.addEventListener(
         )
         .onclick =
         function () {
-
           window.location.href =
             "daily-update.html";
         };
@@ -587,9 +510,7 @@ document.addEventListener(
     */
 
     function renderCalendar() {
-
       refreshUser();
-
 
       const days =
         getUpcomingBrainDays(
@@ -611,9 +532,10 @@ document.addEventListener(
           </h1>
 
           <p class="section-subtitle">
-            Neurovia combines upcoming deadlines
-            with your recent Brain Readiness to
-            flag mentally demanding periods.
+            Neurovia estimates your planned cognitive
+            workload using event duration, mental demand,
+            schedule concentration and your recent
+            Brain Readiness.
           </p>
 
         </div>
@@ -676,6 +598,56 @@ document.addEventListener(
             </div>
 
 
+            <div class="row two">
+
+              <div class="input-row">
+
+                <label>
+                  Starts
+                </label>
+
+                <div class="input-box">
+
+                  <i
+                    class="mdi mdi-clock-outline"
+                  ></i>
+
+                  <input
+                    id="eventStartTime"
+                    type="time"
+                    required
+                  >
+
+                </div>
+
+              </div>
+
+
+              <div class="input-row">
+
+                <label>
+                  Ends
+                </label>
+
+                <div class="input-box">
+
+                  <i
+                    class="mdi mdi-clock-outline"
+                  ></i>
+
+                  <input
+                    id="eventEndTime"
+                    type="time"
+                    required
+                  >
+
+                </div>
+
+              </div>
+
+            </div>
+
+
             <div class="input-row">
 
               <label>
@@ -684,9 +656,7 @@ document.addEventListener(
 
               <div class="input-box">
 
-                <select
-                  id="eventType"
-                >
+                <select id="eventType">
 
                   <option>
                     Exam
@@ -723,23 +693,29 @@ document.addEventListener(
 
               <div class="input-box">
 
-                <select
-                  id="eventIntensity"
-                >
+                <select id="eventIntensity">
 
                   <option value="1">
+                    Super Light
+                  </option>
+
+                  <option value="2">
                     Light
                   </option>
 
                   <option
-                    value="2"
+                    value="3"
                     selected
                   >
                     Moderate
                   </option>
 
-                  <option value="3">
+                  <option value="4">
                     High
+                  </option>
+
+                  <option value="5">
+                    Super High
                   </option>
 
                 </select>
@@ -747,6 +723,12 @@ document.addEventListener(
               </div>
 
             </div>
+
+
+            <p
+              id="calendarMessage"
+              class="message-text"
+            ></p>
 
 
             <button
@@ -767,9 +749,7 @@ document.addEventListener(
             Next 14 days
           </h2>
 
-          <div
-            class="brain-calendar-list"
-          >
+          <div class="brain-calendar-list">
 
             ${
               days
@@ -780,7 +760,6 @@ document.addEventListener(
                       dateFromKey(
                         day.date
                       );
-
 
                     const label =
                       date
@@ -798,7 +777,6 @@ document.addEventListener(
                           }
                         );
 
-
                     return `
 
                       <div
@@ -815,20 +793,27 @@ document.addEventListener(
                         >
 
                           <div>
-
                             <strong>
                               ${label}
                             </strong>
 
+                            <div
+                              class="muted"
+                              style="
+                                margin-top:4px;
+                                font-size:12px;
+                              "
+                            >
+                              Estimated load:
+                              ${day.risk.load}
+                            </div>
                           </div>
 
 
                           <span
                             class="risk-pill"
                           >
-                            ${
-                              day.risk.tier
-                            }
+                            ${day.risk.tier}
                           </span>
 
                         </div>
@@ -855,7 +840,40 @@ document.addEventListener(
                                           class="muted"
                                         >
                                           ${event.type}
+                                          ·
+                                          ${getIntensityLabel(
+                                            event.intensity
+                                          )}
                                         </div>
+
+                                        ${
+                                          event.startTime &&
+                                          event.endTime
+
+                                            ? `
+                                              <div
+                                                class="muted"
+                                                style="
+                                                  margin-top:3px;
+                                                  font-size:12px;
+                                                "
+                                              >
+                                                ${formatTime(
+                                                  event.startTime
+                                                )}
+                                                –
+                                                ${formatTime(
+                                                  event.endTime
+                                                )}
+                                                ·
+                                                ${getEventDurationHours(
+                                                  event
+                                                )}h
+                                              </div>
+                                            `
+
+                                            : ""
+                                        }
 
                                       </div>
 
@@ -874,28 +892,27 @@ document.addEventListener(
                                 .join("")
 
                             : `
-                                <p class="muted">
-                                  No events
-                                </p>
-                              `
+                              <p class="muted">
+                                No events
+                              </p>
+                            `
                         }
 
 
                         ${
-                          day.risk.tier !==
-                          "Low"
+                          day.events.length
 
                             ? `
-                                <div
-                                  class="calendar-warning"
-                                >
-                                  ${
-                                    getCalendarSuggestion(
-                                      day.risk
-                                    )
-                                  }
-                                </div>
-                              `
+                              <div
+                                class="calendar-warning"
+                              >
+                                ${
+                                  getCalendarSuggestion(
+                                    day.risk
+                                  )
+                                }
+                              </div>
+                            `
 
                             : ""
                         }
@@ -920,8 +937,47 @@ document.addEventListener(
         .addEventListener(
           "submit",
           function (event) {
-
             event.preventDefault();
+
+            const message =
+              document.getElementById(
+                "calendarMessage"
+              );
+
+            message.textContent = "";
+            message.classList.remove(
+              "error"
+            );
+
+
+            const startTime =
+              document
+                .getElementById(
+                  "eventStartTime"
+                )
+                .value;
+
+            const endTime =
+              document
+                .getElementById(
+                  "eventEndTime"
+                )
+                .value;
+
+
+            if (
+              timeToMinutes(endTime) <=
+              timeToMinutes(startTime)
+            ) {
+              message.textContent =
+                "End time must be later than start time.";
+
+              message.classList.add(
+                "error"
+              );
+
+              return;
+            }
 
 
             const updated =
@@ -931,7 +987,6 @@ document.addEventListener(
             addBrainEvent(
               updated,
               {
-
                 title:
                   document
                     .getElementById(
@@ -947,6 +1002,10 @@ document.addEventListener(
                     )
                     .value,
 
+                startTime,
+
+                endTime,
+
                 type:
                   document
                     .getElementById(
@@ -960,16 +1019,11 @@ document.addEventListener(
                       "eventIntensity"
                     )
                     .value
-
               }
             );
 
 
-            updateUser(
-              updated
-            );
-
-
+            updateUser(updated);
             renderCalendar();
           }
         );
@@ -989,21 +1043,16 @@ document.addEventListener(
                 const updated =
                   getCurrentUserObject();
 
-
                 deleteBrainEvent(
                   updated,
                   button.dataset.id
                 );
 
-
-                updateUser(
-                  updated
-                );
-
-
+                updateUser(updated);
                 renderCalendar();
               }
             );
+
           }
         );
     }
@@ -1016,29 +1065,21 @@ document.addEventListener(
     */
 
     function renderJournal() {
-
       refreshUser();
-
 
       const entries =
         [
           ...user.brainJournal
         ]
           .sort(
-            (
-              a,
-              b
-            ) =>
+            (a, b) =>
               b.date.localeCompare(
                 a.date
               )
           );
 
-
       const patterns =
-        buildJournalPatterns(
-          user
-        );
+        buildJournalPatterns(user);
 
 
       journalTab.innerHTML = `
@@ -1067,9 +1108,7 @@ document.addEventListener(
             Today's note
           </h2>
 
-          <form
-            id="journalForm"
-          >
+          <form id="journalForm">
 
 
             <div class="input-row">
@@ -1115,9 +1154,7 @@ document.addEventListener(
             </p>
 
 
-            <div
-              class="journal-tags"
-            >
+            <div class="journal-tags">
 
               ${
                 JOURNAL_TAGS
@@ -1175,9 +1212,7 @@ document.addEventListener(
               .map(
                 pattern => `
 
-                  <div
-                    class="pattern-card"
-                  >
+                  <div class="pattern-card">
 
                     <strong>
                       ${pattern.title}
@@ -1207,16 +1242,11 @@ document.addEventListener(
             entries.length
 
               ? entries
-                  .slice(
-                    0,
-                    10
-                  )
+                  .slice(0, 10)
                   .map(
                     entry => `
 
-                      <div
-                        class="journal-entry"
-                      >
+                      <div class="journal-entry">
 
                         <div
                           class="journal-entry-top"
@@ -1243,46 +1273,39 @@ document.addEventListener(
 
                         ${
                           entry.drained
-
                             ? `
-                                <p>
-                                  <strong>
-                                    Drained:
-                                  </strong>
+                              <p>
+                                <strong>
+                                  Drained:
+                                </strong>
 
-                                  ${entry.drained}
-                                </p>
-                              `
-
+                                ${entry.drained}
+                              </p>
+                            `
                             : ""
                         }
 
 
                         ${
                           entry.helped
-
                             ? `
-                                <p>
-                                  <strong>
-                                    Helped:
-                                  </strong>
+                              <p>
+                                <strong>
+                                  Helped:
+                                </strong>
 
-                                  ${entry.helped}
-                                </p>
-                              `
-
+                                ${entry.helped}
+                              </p>
+                            `
                             : ""
                         }
 
 
-                        <div
-                          class="journal-tag-row"
-                        >
+                        <div class="journal-tag-row">
 
                           ${
                             (
-                              entry.tags ||
-                              []
+                              entry.tags || []
                             )
                               .map(
                                 tag => `
@@ -1302,10 +1325,10 @@ document.addEventListener(
                   .join("")
 
               : `
-                  <p class="muted">
-                    No journal entries yet.
-                  </p>
-                `
+                <p class="muted">
+                  No journal entries yet.
+                </p>
+              `
           }
 
         </div>
@@ -1322,10 +1345,8 @@ document.addEventListener(
 
             event.preventDefault();
 
-
             const updated =
               getCurrentUserObject();
-
 
             const tags =
               Array.from(
@@ -1343,7 +1364,6 @@ document.addEventListener(
             addJournalEntry(
               updated,
               {
-
                 drained:
                   document
                     .getElementById(
@@ -1361,16 +1381,11 @@ document.addEventListener(
                     .trim(),
 
                 tags
-
               }
             );
 
 
-            updateUser(
-              updated
-            );
-
-
+            updateUser(updated);
             renderJournal();
           }
         );
@@ -1390,21 +1405,16 @@ document.addEventListener(
                 const updated =
                   getCurrentUserObject();
 
-
                 deleteJournalEntry(
                   updated,
                   button.dataset.id
                 );
 
-
-                updateUser(
-                  updated
-                );
-
-
+                updateUser(updated);
                 renderJournal();
               }
             );
+
           }
         );
     }
@@ -1417,13 +1427,10 @@ document.addEventListener(
     */
 
     function renderProfile() {
-
       refreshUser();
-
 
       const latest =
         getLatest();
-
 
       const baselineCount =
         user.baselineHistory
@@ -1469,12 +1476,9 @@ document.addEventListener(
             "
           >
 
-            <h2
-              style="margin:0;"
-            >
+            <h2 style="margin:0;">
               Fixed profile
             </h2>
-
 
             <button
               id="editProfileBtn"
@@ -1702,25 +1706,22 @@ document.addEventListener(
 
 
             ${
-              user.baseline
-                ?.scores
-
+              user.baseline?.scores
                 ? `
-                    <div class="info-row">
+                  <div class="info-row">
 
-                      <strong>
-                        Current baseline score:
-                      </strong>
+                    <strong>
+                      Current baseline score:
+                    </strong>
 
-                      ${
-                        user.baseline
-                          .scores
-                          .overall
-                      }/100
+                    ${
+                      user.baseline
+                        .scores
+                        .overall
+                    }/100
 
-                    </div>
-                  `
-
+                  </div>
+                `
                 : ""
             }
 
@@ -1748,82 +1749,68 @@ document.addEventListener(
 
           <div class="info-table">
 
-
             <div class="info-row">
-
               <strong>
                 Daily check-ins:
               </strong>
 
               ${getDates().length}
-
             </div>
 
 
             <div class="info-row">
-
               <strong>
                 Calendar events:
               </strong>
 
               ${
                 user.brainCalendar
-                  ?.length ||
-                0
+                  ?.length || 0
               }
-
             </div>
 
 
             <div class="info-row">
-
               <strong>
                 Journal entries:
               </strong>
 
               ${
                 user.brainJournal
-                  ?.length ||
-                0
+                  ?.length || 0
               }
-
             </div>
 
 
             <div class="info-row">
-
               <strong>
                 Weekly check-ins:
               </strong>
 
               ${
                 user.weeklyCheckins
-                  ?.length ||
-                0
+                  ?.length || 0
               }
-
             </div>
 
 
             ${
               latest
-
                 ? `
-                    <div class="info-row">
+                  <div class="info-row">
 
-                      <strong>
-                        Latest Daily Check-In:
-                      </strong>
+                    <strong>
+                      Latest Daily Check-In:
+                    </strong>
 
-                      ${
-                        formatDateKey(
-                          latest.date
-                        )
-                      }
+                    ${
+                      formatDateKey(
+                        latest.date
+                      )
+                    }
 
-                    </div>
-                  `
-
+                  </div>
+                `
                 : ""
             }
 
@@ -1833,7 +1820,6 @@ document.addEventListener(
 
 
         <div class="profile-actions">
-
 
           <button
             id="profileDailyBtn"
@@ -1870,20 +1856,14 @@ document.addEventListener(
             Log out
           </button>
 
-
         </div>
       `;
 
-
-      /*
-        Fixed profile editing
-      */
 
       const editProfileBtn =
         document.getElementById(
           "editProfileBtn"
         );
-
 
       const saveProfileBtn =
         document.getElementById(
@@ -1892,47 +1872,26 @@ document.addEventListener(
 
 
       const profileFields = [
-
         {
-          input:
-            "profileAge",
-
-          box:
-            "ageBox"
+          input: "profileAge",
+          box: "ageBox"
         },
-
         {
-          input:
-            "profileSex",
-
-          box:
-            "sexBox"
+          input: "profileSex",
+          box: "sexBox"
         },
-
         {
-          input:
-            "profileCountry",
-
-          box:
-            "countryBox"
+          input: "profileCountry",
+          box: "countryBox"
         },
-
         {
-          input:
-            "profileWeight",
-
-          box:
-            "weightBox"
+          input: "profileWeight",
+          box: "weightBox"
         },
-
         {
-          input:
-            "profileHeight",
-
-          box:
-            "heightBox"
+          input: "profileHeight",
+          box: "heightBox"
         }
-
       ];
 
 
@@ -1948,7 +1907,6 @@ document.addEventListener(
                 )
                 .disabled =
                 false;
-
 
               document
                 .getElementById(
@@ -1969,7 +1927,6 @@ document.addEventListener(
               "hidden-btn"
             );
 
-
           saveProfileBtn
             .classList
             .remove(
@@ -1989,14 +1946,12 @@ document.addEventListener(
               .value
               .trim();
 
-
           const sex =
             document
               .getElementById(
                 "profileSex"
               )
               .value;
-
 
           const country =
             document
@@ -2006,7 +1961,6 @@ document.addEventListener(
               .value
               .trim();
 
-
           const weight =
             document
               .getElementById(
@@ -2015,7 +1969,6 @@ document.addEventListener(
               .value
               .trim();
 
-
           const height =
             document
               .getElementById(
@@ -2023,7 +1976,6 @@ document.addEventListener(
               )
               .value
               .trim();
-
 
           const message =
             document
@@ -2039,7 +1991,6 @@ document.addEventListener(
             !weight ||
             !height
           ) {
-
             message.textContent =
               "Please complete all fixed profile fields.";
 
@@ -2056,27 +2007,14 @@ document.addEventListener(
 
 
           updated.profile = {
-
             ...updated.profile,
-
             age,
-
             sex,
-
             country,
-
             weight,
-
             height
-
           };
 
-
-          /*
-            Keep the static answers
-            synchronized with the
-            fixed profile.
-          */
 
           updated.onboardingAnswers =
             updated.onboardingAnswers ||
@@ -2099,18 +2037,10 @@ document.addEventListener(
             height;
 
 
-          updateUser(
-            updated
-          );
-
-
+          updateUser(updated);
           renderProfile();
         };
 
-
-      /*
-        Daily
-      */
 
       document
         .getElementById(
@@ -2118,15 +2048,10 @@ document.addEventListener(
         )
         .onclick =
         function () {
-
           window.location.href =
             "daily-update.html";
         };
 
-
-      /*
-        Weekly Check-In
-      */
 
       document
         .getElementById(
@@ -2134,15 +2059,10 @@ document.addEventListener(
         )
         .onclick =
         function () {
-
           window.location.href =
             "weekly-checkin.html";
         };
 
-
-      /*
-        Previous days
-      */
 
       document
         .getElementById(
@@ -2150,19 +2070,10 @@ document.addEventListener(
         )
         .onclick =
         function () {
-
           window.location.href =
             "previous-days.html";
         };
 
-
-      /*
-        Retake Baseline
-
-        We use a session flag so
-        onboarding knows this is a
-        retake rather than first setup.
-      */
 
       document
         .getElementById(
@@ -2176,15 +2087,10 @@ document.addEventListener(
             "true"
           );
 
-
           window.location.href =
             "onboarding.html";
         };
 
-
-      /*
-        Logout
-      */
 
       document
         .getElementById(
@@ -2194,7 +2100,6 @@ document.addEventListener(
         function () {
 
           logoutUser();
-
 
           window.location.href =
             "index.html";
@@ -2209,13 +2114,9 @@ document.addEventListener(
     */
 
     function renderEverything() {
-
       renderHome();
-
       renderCalendar();
-
       renderJournal();
-
       renderProfile();
     }
 
@@ -2267,20 +2168,17 @@ document.addEventListener(
                   "hidden"
                 );
 
-
               calendarTab
                 .classList
                 .add(
                   "hidden"
                 );
 
-
               journalTab
                 .classList
                 .add(
                   "hidden"
                 );
-
 
               profileTab
                 .classList
@@ -2293,11 +2191,7 @@ document.addEventListener(
                 button.dataset.tab;
 
 
-              if (
-                tab ===
-                "home"
-              ) {
-
+              if (tab === "home") {
                 renderHome();
 
                 homeTab
@@ -2309,10 +2203,8 @@ document.addEventListener(
 
 
               if (
-                tab ===
-                "calendar"
+                tab === "calendar"
               ) {
-
                 renderCalendar();
 
                 calendarTab
@@ -2324,10 +2216,8 @@ document.addEventListener(
 
 
               if (
-                tab ===
-                "journal"
+                tab === "journal"
               ) {
-
                 renderJournal();
 
                 journalTab
@@ -2339,10 +2229,8 @@ document.addEventListener(
 
 
               if (
-                tab ===
-                "profile"
+                tab === "profile"
               ) {
-
                 renderProfile();
 
                 profileTab
