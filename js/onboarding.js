@@ -15,8 +15,24 @@ document.addEventListener(
     }
 
 
+    const isRetake =
+      sessionStorage.getItem(
+        "neurovia_retake_baseline"
+      ) ===
+      "true";
+
+
+    /*
+      Completed users normally
+      should not enter onboarding.
+
+      Exception:
+      explicit baseline retake.
+    */
+
     if (
-      user.onboardingCompleted
+      user.onboardingCompleted &&
+      !isRetake
     ) {
 
       window.location.href =
@@ -30,7 +46,23 @@ document.addEventListener(
       0;
 
 
-    const answers = {};
+    /*
+      On a baseline retake,
+      prefill previous answers.
+
+      On first onboarding,
+      start empty.
+    */
+
+    const answers =
+      isRetake
+        ? {
+            ...(
+              user.onboardingAnswers ||
+              {}
+            )
+          }
+        : {};
 
 
     const progressDots =
@@ -82,7 +114,10 @@ document.addEventListener(
 
 
       QUESTIONS.forEach(
-        (_, index) => {
+        (
+          _,
+          index
+        ) => {
 
           const dot =
             document.createElement(
@@ -100,9 +135,10 @@ document.addEventListener(
             );
 
 
-          progressDots.appendChild(
-            dot
-          );
+          progressDots
+            .appendChild(
+              dot
+            );
 
         }
       );
@@ -122,7 +158,9 @@ document.addEventListener(
 
 
       progressLabel.textContent =
-        `Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`;
+        isRetake
+          ? `Baseline update · Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`
+          : `Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`;
 
 
       onboardingMessage.textContent =
@@ -131,7 +169,9 @@ document.addEventListener(
 
       onboardingMessage
         .classList
-        .remove("error");
+        .remove(
+          "error"
+        );
 
 
       renderProgressDots();
@@ -142,9 +182,12 @@ document.addEventListener(
 
 
       if (
-        q.type === "number" ||
-        q.type === "time" ||
-        q.type === "text"
+        q.type ===
+          "number" ||
+        q.type ===
+          "time" ||
+        q.type ===
+          "text"
       ) {
 
         const row =
@@ -158,9 +201,12 @@ document.addEventListener(
 
 
         row.innerHTML = `
+
           <div class="input-box">
 
-            <i class="mdi mdi-pencil-outline"></i>
+            <i
+              class="mdi mdi-pencil-outline"
+            ></i>
 
             <input
               id="dynamicInput"
@@ -177,7 +223,6 @@ document.addEventListener(
           .appendChild(
             row
           );
-
       }
 
 
@@ -232,7 +277,6 @@ document.addEventListener(
 
 
                 renderQuestion();
-
               }
             );
 
@@ -249,12 +293,12 @@ document.addEventListener(
           .appendChild(
             list
           );
-
       }
 
 
       backBtn.style.visibility =
-        currentQuestionIndex === 0
+        currentQuestionIndex ===
+        0
           ? "hidden"
           : "visible";
 
@@ -262,7 +306,13 @@ document.addEventListener(
       nextBtn.textContent =
         currentQuestionIndex ===
         QUESTIONS.length - 1
-          ? "Finish Baseline"
+
+          ? (
+              isRetake
+                ? "Save New Baseline"
+                : "Finish Baseline"
+            )
+
           : "Next";
     }
 
@@ -276,9 +326,12 @@ document.addEventListener(
 
 
       if (
-        q.type === "number" ||
-        q.type === "time" ||
-        q.type === "text"
+        q.type ===
+          "number" ||
+        q.type ===
+          "time" ||
+        q.type ===
+          "text"
       ) {
 
         const input =
@@ -299,7 +352,9 @@ document.addEventListener(
 
           onboardingMessage
             .classList
-            .add("error");
+            .add(
+              "error"
+            );
 
 
           return false;
@@ -320,7 +375,9 @@ document.addEventListener(
       ) {
 
         if (
-          !answers[q.id]
+          !answers[
+            q.id
+          ]
         ) {
 
           onboardingMessage.textContent =
@@ -329,7 +386,9 @@ document.addEventListener(
 
           onboardingMessage
             .classList
-            .add("error");
+            .add(
+              "error"
+            );
 
 
           return false;
@@ -355,10 +414,9 @@ document.addEventListener(
 
           currentQuestionIndex--;
 
+
           renderQuestion();
-
         }
-
       }
     );
 
@@ -370,6 +428,7 @@ document.addEventListener(
         if (
           !saveCurrentAnswer()
         ) {
+
           return;
         }
 
@@ -381,7 +440,9 @@ document.addEventListener(
 
           currentQuestionIndex++;
 
+
           renderQuestion();
+
 
           return;
         }
@@ -397,8 +458,12 @@ document.addEventListener(
         STATIC_FIELDS.forEach(
           key => {
 
-            profile[key] =
-              answers[key];
+            profile[
+              key
+            ] =
+              answers[
+                key
+              ];
 
           }
         );
@@ -449,7 +514,11 @@ document.addEventListener(
               todayKey(),
 
             scores:
-              baselineScores
+              baselineScores,
+
+            completedAt:
+              new Date()
+                .toISOString()
 
           });
 
@@ -484,16 +553,39 @@ document.addEventListener(
 
 
         /*
-          Baseline and daily data
-          are deliberately separate.
-
-          After the baseline, the
-          user completes the first
-          Daily Check-In.
+          Remove retake mode after
+          successful completion.
         */
 
-        window.location.href =
-          "daily-update.html";
+        sessionStorage.removeItem(
+          "neurovia_retake_baseline"
+        );
+
+
+        /*
+          First baseline:
+          go to first Daily Check-In.
+
+          Baseline retake:
+          return to dashboard because
+          daily history already exists.
+        */
+
+        if (
+          isRetake
+        ) {
+
+          window.location.href =
+            "dashboard.html";
+
+        }
+
+        else {
+
+          window.location.href =
+            "daily-update.html";
+
+        }
 
       }
     );
