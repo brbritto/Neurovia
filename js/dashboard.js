@@ -5,10 +5,12 @@ document.addEventListener(
     let user =
       getCurrentUserObject();
 
+
     if (
       !user ||
       !user.onboardingCompleted
     ) {
+
       window.location.href =
         "index.html";
 
@@ -21,15 +23,18 @@ document.addEventListener(
         "homeTab"
       );
 
+
     const calendarTab =
       document.getElementById(
         "calendarTab"
       );
 
+
     const journalTab =
       document.getElementById(
         "journalTab"
       );
+
 
     const profileTab =
       document.getElementById(
@@ -38,41 +43,94 @@ document.addEventListener(
 
 
     function refreshUser() {
+
       user =
         getCurrentUserObject();
 
-      ensureBrainCalendar(user);
-      ensureBrainJournal(user);
+
+      ensureBrainCalendar(
+        user
+      );
+
+
+      ensureBrainJournal(
+        user
+      );
     }
 
 
     function getDates() {
-      return Object.keys(
-        user.dailyLogs || {}
-      ).sort();
+
+      return Object
+        .keys(
+          user.dailyLogs ||
+          {}
+        )
+        .sort();
     }
 
 
     function getLatest() {
+
       const dates =
         getDates();
 
-      if (!dates.length) {
+
+      if (
+        !dates.length
+      ) {
+
         return null;
       }
+
 
       const date =
         dates[
           dates.length - 1
         ];
 
+
       return {
+
         date,
+
         log:
           user.dailyLogs[
             date
           ]
+
       };
+    }
+
+
+    function formatDateKey(
+      key
+    ) {
+
+      const date =
+        dateFromKey(
+          key
+        );
+
+
+      if (!date) {
+        return key;
+      }
+
+
+      return date.toLocaleDateString(
+        "en-US",
+        {
+          month:
+            "short",
+
+          day:
+            "numeric",
+
+          year:
+            "numeric"
+        }
+      );
     }
 
 
@@ -81,6 +139,7 @@ document.addEventListener(
       value,
       note = ""
     ) {
+
       return `
         <div class="metric-card">
 
@@ -95,11 +154,16 @@ document.addEventListener(
           ${
             note
               ? `
-                <div class="muted"
-                  style="margin-top:6px;font-size:13px;">
-                  ${note}
-                </div>
-              `
+                  <div
+                    class="muted"
+                    style="
+                      margin-top:6px;
+                      font-size:13px;
+                    "
+                  >
+                    ${note}
+                  </div>
+                `
               : ""
           }
 
@@ -108,31 +172,53 @@ document.addEventListener(
     }
 
 
-    function riskClass(tier) {
-      if (tier === "High") {
+    function riskClass(
+      tier
+    ) {
+
+      if (
+        tier ===
+        "High"
+      ) {
+
         return "risk-high";
       }
+
 
       if (
         tier ===
         "Moderate"
       ) {
+
         return "risk-moderate";
       }
+
 
       return "risk-low";
     }
 
 
+    /*
+      =========================
+      TODAY
+      =========================
+    */
+
     function renderHome() {
+
       refreshUser();
+
 
       const latest =
         getLatest();
 
-      if (!latest) {
+
+      if (
+        !latest
+      ) {
 
         homeTab.innerHTML = `
+
           <div class="hero-card">
 
             <p class="muted">
@@ -144,14 +230,16 @@ document.addEventListener(
             </h1>
 
             <p class="section-subtitle">
-              Complete your first daily check-in
-              to start building your cognitive
-              baseline.
+              Your baseline is complete.
+              Complete your first Daily Check-In
+              to start building your daily history
+              and cognitive wellness trends.
             </p>
 
             <button
               id="firstDailyBtn"
               class="primary-btn"
+              type="button"
             >
               Start daily check-in
             </button>
@@ -159,15 +247,18 @@ document.addEventListener(
           </div>
         `;
 
+
         document
           .getElementById(
             "firstDailyBtn"
           )
           .onclick =
           function () {
+
             window.location.href =
               "daily-update.html";
           };
+
 
         return;
       }
@@ -175,6 +266,7 @@ document.addEventListener(
 
       const scores =
         latest.log.scores;
+
 
       const recentLogs =
         getDates()
@@ -186,6 +278,7 @@ document.addEventListener(
               ]
           );
 
+
       const insight =
         buildMainInsight(
           user,
@@ -194,10 +287,12 @@ document.addEventListener(
           recentLogs
         );
 
+
       const recovery =
         buildRecoveryTool(
           user
         );
+
 
       const sleepDebt =
         calculateWeeklySleepDebt(
@@ -228,13 +323,16 @@ document.addEventListener(
           </div>
 
           <p class="section-subtitle">
+
             ${
               classifyReadiness(
                 scores.brainReadiness ??
                 scores.overall
               )
             }
+
           </p>
+
 
           <div class="bar-bg">
 
@@ -257,15 +355,19 @@ document.addEventListener(
 
           ${metricCard(
             "Recovery",
-            scores.recovery ?? "--",
+            scores.recovery ??
+            "--",
             "recharge"
           )}
 
+
           ${metricCard(
             "Cognitive Load",
-            scores.cognitiveLoad ?? "--",
+            scores.cognitiveLoad ??
+            "--",
             "mental demand"
           )}
+
 
           ${metricCard(
             "Sleep Debt",
@@ -273,9 +375,13 @@ document.addEventListener(
             "recent"
           )}
 
+
           ${metricCard(
             "Focus",
-            `${latest.log.focusLevel ?? "--"}/10`,
+            `${
+              latest.log.focusLevel ??
+              "--"
+            }/10`,
             "today"
           )}
 
@@ -317,28 +423,28 @@ document.addEventListener(
         ${
           recovery
             ? `
-              <div class="card">
+                <div class="card">
 
-                <p class="muted">
-                  RECOVERY TOOL
-                </p>
+                  <p class="muted">
+                    RECOVERY TOOL
+                  </p>
 
-                <h2>
-                  ${recovery.type}
-                </h2>
+                  <h2>
+                    ${recovery.type}
+                  </h2>
 
-                <p>
-                  ${recovery.reason}
-                </p>
+                  <p>
+                    ${recovery.reason}
+                  </p>
 
-                <div
-                  class="recovery-action"
-                >
-                  ${recovery.action}
+                  <div
+                    class="recovery-action"
+                  >
+                    ${recovery.action}
+                  </div>
+
                 </div>
-
-              </div>
-            `
+              `
             : ""
         }
 
@@ -352,38 +458,98 @@ document.addEventListener(
           <div class="signal-grid">
 
             <div>
-              <span>Sleep</span>
+
+              <span>
+                Sleep
+              </span>
+
               <strong>
-                ${scores.sleepHours ?? "--"}h
+                ${
+                  scores.sleepHours ??
+                  "--"
+                }h
               </strong>
+
             </div>
 
-            <div>
-              <span>Stress</span>
-              <strong>
-                ${latest.log.stressLevel ?? "--"}/10
-              </strong>
-            </div>
 
             <div>
-              <span>Energy</span>
+
+              <span>
+                Sleep quality
+              </span>
+
               <strong>
-                ${latest.log.energyLevel ?? "--"}/10
+                ${
+                  latest.log.sleepQuality ??
+                  "--"
+                }/10
               </strong>
+
             </div>
 
-            <div>
-              <span>Workload</span>
-              <strong>
-                ${latest.log.workloadLevel ?? "--"}/10
-              </strong>
-            </div>
 
             <div>
-              <span>Focus</span>
+
+              <span>
+                Stress
+              </span>
+
               <strong>
-                ${latest.log.focusLevel ?? "--"}/10
+                ${
+                  latest.log.stressLevel ??
+                  "--"
+                }/10
               </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Energy
+              </span>
+
+              <strong>
+                ${
+                  latest.log.energyLevel ??
+                  "--"
+                }/10
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Workload
+              </span>
+
+              <strong>
+                ${
+                  latest.log.workloadLevel ??
+                  "--"
+                }/10
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Focus
+              </span>
+
+              <strong>
+                ${
+                  latest.log.focusLevel ??
+                  "--"
+                }/10
+              </strong>
+
             </div>
 
           </div>
@@ -394,6 +560,7 @@ document.addEventListener(
         <button
           id="dailyUpdateBtn"
           class="primary-btn"
+          type="button"
         >
           Update today's check-in
         </button>
@@ -406,14 +573,23 @@ document.addEventListener(
         )
         .onclick =
         function () {
+
           window.location.href =
             "daily-update.html";
         };
     }
 
 
+    /*
+      =========================
+      BRAIN CALENDAR
+      =========================
+    */
+
     function renderCalendar() {
+
       refreshUser();
+
 
       const days =
         getUpcomingBrainDays(
@@ -451,13 +627,18 @@ document.addEventListener(
 
           <form id="brainEventForm">
 
+
             <div class="input-row">
+
               <label>
                 Event
               </label>
 
               <div class="input-box">
-                <i class="mdi mdi-pencil-outline"></i>
+
+                <i
+                  class="mdi mdi-pencil-outline"
+                ></i>
 
                 <input
                   id="eventTitle"
@@ -465,28 +646,38 @@ document.addEventListener(
                   placeholder="Biology exam"
                   required
                 >
+
               </div>
+
             </div>
 
 
             <div class="input-row">
+
               <label>
                 Date
               </label>
 
               <div class="input-box">
-                <i class="mdi mdi-calendar"></i>
+
+                <i
+                  class="mdi mdi-calendar"
+                ></i>
 
                 <input
                   id="eventDate"
                   type="date"
+                  min="${todayKey()}"
                   required
                 >
+
               </div>
+
             </div>
 
 
             <div class="input-row">
+
               <label>
                 Type
               </label>
@@ -496,18 +687,36 @@ document.addEventListener(
                 <select
                   id="eventType"
                 >
-                  <option>Exam</option>
-                  <option>Assignment</option>
-                  <option>Presentation</option>
-                  <option>Activity</option>
-                  <option>Other</option>
+
+                  <option>
+                    Exam
+                  </option>
+
+                  <option>
+                    Assignment
+                  </option>
+
+                  <option>
+                    Presentation
+                  </option>
+
+                  <option>
+                    Activity
+                  </option>
+
+                  <option>
+                    Other
+                  </option>
+
                 </select>
 
               </div>
+
             </div>
 
 
             <div class="input-row">
+
               <label>
                 Mental demand
               </label>
@@ -517,6 +726,7 @@ document.addEventListener(
                 <select
                   id="eventIntensity"
                 >
+
                   <option value="1">
                     Light
                   </option>
@@ -531,9 +741,11 @@ document.addEventListener(
                   <option value="3">
                     High
                   </option>
+
                 </select>
 
               </div>
+
             </div>
 
 
@@ -561,115 +773,137 @@ document.addEventListener(
 
             ${
               days
-                .map(day => {
+                .map(
+                  day => {
 
-                  const date =
-                    new Date(
-                      day.date +
-                      "T12:00:00"
-                    );
+                    const date =
+                      dateFromKey(
+                        day.date
+                      );
 
-                  const label =
-                    date.toLocaleDateString(
-                      "en-US",
-                      {
-                        weekday:
-                          "short",
-                        month:
-                          "short",
-                        day:
-                          "numeric"
-                      }
-                    );
 
-                  return `
+                    const label =
+                      date
+                        .toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday:
+                              "short",
 
-                    <div
-                      class="calendar-day-card ${riskClass(
-                        day.risk.tier
-                      )}"
-                    >
+                            month:
+                              "short",
+
+                            day:
+                              "numeric"
+                          }
+                        );
+
+
+                    return `
 
                       <div
-                        class="calendar-day-top"
+                        class="
+                          calendar-day-card
+                          ${riskClass(
+                            day.risk.tier
+                          )}
+                        "
                       >
 
-                        <div>
-                          <strong>
-                            ${label}
-                          </strong>
+                        <div
+                          class="calendar-day-top"
+                        >
+
+                          <div>
+
+                            <strong>
+                              ${label}
+                            </strong>
+
+                          </div>
+
+
+                          <span
+                            class="risk-pill"
+                          >
+                            ${
+                              day.risk.tier
+                            }
+                          </span>
+
                         </div>
 
-                        <span
-                          class="risk-pill"
-                        >
-                          ${
-                            day.risk.tier
-                          }
-                        </span>
+
+                        ${
+                          day.events.length
+
+                            ? day.events
+                                .map(
+                                  event => `
+
+                                    <div
+                                      class="calendar-event"
+                                    >
+
+                                      <div>
+
+                                        <strong>
+                                          ${event.title}
+                                        </strong>
+
+                                        <div
+                                          class="muted"
+                                        >
+                                          ${event.type}
+                                        </div>
+
+                                      </div>
+
+
+                                      <button
+                                        class="delete-event-btn"
+                                        data-id="${event.id}"
+                                        type="button"
+                                      >
+                                        ×
+                                      </button>
+
+                                    </div>
+                                  `
+                                )
+                                .join("")
+
+                            : `
+                                <p class="muted">
+                                  No events
+                                </p>
+                              `
+                        }
+
+
+                        ${
+                          day.risk.tier !==
+                          "Low"
+
+                            ? `
+                                <div
+                                  class="calendar-warning"
+                                >
+                                  ${
+                                    getCalendarSuggestion(
+                                      day.risk
+                                    )
+                                  }
+                                </div>
+                              `
+
+                            : ""
+                        }
 
                       </div>
-
-
-                      ${
-                        day.events.length
-                          ? day.events
-                              .map(
-                                event => `
-                                  <div
-                                    class="calendar-event"
-                                  >
-
-                                    <div>
-                                      <strong>
-                                        ${event.title}
-                                      </strong>
-
-                                      <div
-                                        class="muted"
-                                      >
-                                        ${event.type}
-                                      </div>
-                                    </div>
-
-                                    <button
-                                      class="delete-event-btn"
-                                      data-id="${event.id}"
-                                      type="button"
-                                    >
-                                      ×
-                                    </button>
-
-                                  </div>
-                                `
-                              )
-                              .join("")
-                          : `
-                              <p class="muted">
-                                No events
-                              </p>
-                            `
-                      }
-
-
-                      ${
-                        day.risk.tier !==
-                        "Low"
-                          ? `
-                              <div
-                                class="calendar-warning"
-                              >
-                                ${getCalendarSuggestion(
-                                  day.risk
-                                )}
-                              </div>
-                            `
-                          : ""
-                      }
-
-                    </div>
-                  `;
-                })
+                    `;
+                  }
+                )
                 .join("")
             }
 
@@ -689,12 +923,15 @@ document.addEventListener(
 
             event.preventDefault();
 
+
             const updated =
               getCurrentUserObject();
+
 
             addBrainEvent(
               updated,
               {
+
                 title:
                   document
                     .getElementById(
@@ -723,12 +960,15 @@ document.addEventListener(
                       "eventIntensity"
                     )
                     .value
+
               }
             );
+
 
             updateUser(
               updated
             );
+
 
             renderCalendar();
           }
@@ -739,42 +979,61 @@ document.addEventListener(
         .querySelectorAll(
           ".delete-event-btn"
         )
-        .forEach(button => {
+        .forEach(
+          button => {
 
-          button.addEventListener(
-            "click",
-            function () {
+            button.addEventListener(
+              "click",
+              function () {
 
-              const updated =
-                getCurrentUserObject();
+                const updated =
+                  getCurrentUserObject();
 
-              deleteBrainEvent(
-                updated,
-                button.dataset.id
-              );
 
-              updateUser(
-                updated
-              );
+                deleteBrainEvent(
+                  updated,
+                  button.dataset.id
+                );
 
-              renderCalendar();
-            }
-          );
-        });
+
+                updateUser(
+                  updated
+                );
+
+
+                renderCalendar();
+              }
+            );
+          }
+        );
     }
 
 
+    /*
+      =========================
+      BRAIN JOURNAL
+      =========================
+    */
+
     function renderJournal() {
+
       refreshUser();
 
+
       const entries =
-        [...user.brainJournal]
+        [
+          ...user.brainJournal
+        ]
           .sort(
-            (a, b) =>
+            (
+              a,
+              b
+            ) =>
               b.date.localeCompare(
                 a.date
               )
           );
+
 
       const patterns =
         buildJournalPatterns(
@@ -808,7 +1067,10 @@ document.addEventListener(
             Today's note
           </h2>
 
-          <form id="journalForm">
+          <form
+            id="journalForm"
+          >
+
 
             <div class="input-row">
 
@@ -852,6 +1114,7 @@ document.addEventListener(
               Tags
             </p>
 
+
             <div
               class="journal-tags"
             >
@@ -860,6 +1123,7 @@ document.addEventListener(
                 JOURNAL_TAGS
                   .map(
                     tag => `
+
                       <label
                         class="journal-tag"
                       >
@@ -905,10 +1169,12 @@ document.addEventListener(
             What Neurovia is noticing
           </h2>
 
+
           ${
             patterns
               .map(
                 pattern => `
+
                   <div
                     class="pattern-card"
                   >
@@ -936,10 +1202,15 @@ document.addEventListener(
             Recent entries
           </h2>
 
+
           ${
             entries.length
+
               ? entries
-                  .slice(0, 10)
+                  .slice(
+                    0,
+                    10
+                  )
                   .map(
                     entry => `
 
@@ -952,7 +1223,11 @@ document.addEventListener(
                         >
 
                           <strong>
-                            ${entry.date}
+                            ${
+                              formatDateKey(
+                                entry.date
+                              )
+                            }
                           </strong>
 
                           <button
@@ -968,6 +1243,7 @@ document.addEventListener(
 
                         ${
                           entry.drained
+
                             ? `
                                 <p>
                                   <strong>
@@ -977,12 +1253,14 @@ document.addEventListener(
                                   ${entry.drained}
                                 </p>
                               `
+
                             : ""
                         }
 
 
                         ${
                           entry.helped
+
                             ? `
                                 <p>
                                   <strong>
@@ -992,6 +1270,7 @@ document.addEventListener(
                                   ${entry.helped}
                                 </p>
                               `
+
                             : ""
                         }
 
@@ -1021,6 +1300,7 @@ document.addEventListener(
                     `
                   )
                   .join("")
+
               : `
                   <p class="muted">
                     No journal entries yet.
@@ -1042,8 +1322,10 @@ document.addEventListener(
 
             event.preventDefault();
 
+
             const updated =
               getCurrentUserObject();
+
 
             const tags =
               Array.from(
@@ -1052,14 +1334,16 @@ document.addEventListener(
                     ".journal-tag input:checked"
                   )
               )
-              .map(
-                input =>
-                  input.value
-              );
+                .map(
+                  input =>
+                    input.value
+                );
+
 
             addJournalEntry(
               updated,
               {
+
                 drained:
                   document
                     .getElementById(
@@ -1077,12 +1361,15 @@ document.addEventListener(
                     .trim(),
 
                 tags
+
               }
             );
+
 
             updateUser(
               updated
             );
+
 
             renderJournal();
           }
@@ -1093,36 +1380,59 @@ document.addEventListener(
         .querySelectorAll(
           ".delete-journal-btn"
         )
-        .forEach(button => {
+        .forEach(
+          button => {
 
-          button.addEventListener(
-            "click",
-            function () {
+            button.addEventListener(
+              "click",
+              function () {
 
-              const updated =
-                getCurrentUserObject();
+                const updated =
+                  getCurrentUserObject();
 
-              deleteJournalEntry(
-                updated,
-                button.dataset.id
-              );
 
-              updateUser(
-                updated
-              );
+                deleteJournalEntry(
+                  updated,
+                  button.dataset.id
+                );
 
-              renderJournal();
-            }
-          );
-        });
+
+                updateUser(
+                  updated
+                );
+
+
+                renderJournal();
+              }
+            );
+          }
+        );
     }
 
 
+    /*
+      =========================
+      PROFILE
+      =========================
+    */
+
     function renderProfile() {
+
       refreshUser();
+
 
       const latest =
         getLatest();
+
+
+      const baselineCount =
+        user.baselineHistory
+          ?.length ||
+        (
+          user.baseline
+            ? 1
+            : 0
+        );
 
 
       profileTab.innerHTML = `
@@ -1149,38 +1459,282 @@ document.addEventListener(
 
         <div class="card">
 
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:12px;
+              margin-bottom:14px;
+            "
+          >
+
+            <h2
+              style="margin:0;"
+            >
+              Fixed profile
+            </h2>
+
+
+            <button
+              id="editProfileBtn"
+              class="mini-btn"
+              type="button"
+            >
+              Edit fixed profile
+            </button>
+
+          </div>
+
+
+          <div class="profile-grid">
+
+
+            <div class="input-row">
+
+              <label>
+                Age
+              </label>
+
+              <div
+                class="input-box locked-field"
+                id="ageBox"
+              >
+
+                <input
+                  id="profileAge"
+                  type="number"
+                  value="${
+                    user.profile?.age ||
+                    ""
+                  }"
+                  disabled
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="input-row">
+
+              <label>
+                Biological sex
+              </label>
+
+              <div
+                class="input-box locked-field"
+                id="sexBox"
+              >
+
+                <select
+                  id="profileSex"
+                  disabled
+                >
+
+                  <option
+                    value="Female"
+                    ${
+                      user.profile?.sex ===
+                      "Female"
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    Female
+                  </option>
+
+                  <option
+                    value="Male"
+                    ${
+                      user.profile?.sex ===
+                      "Male"
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    Male
+                  </option>
+
+                  <option
+                    value="Prefer not to say"
+                    ${
+                      user.profile?.sex ===
+                      "Prefer not to say"
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    Prefer not to say
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div class="input-row">
+
+              <label>
+                Country
+              </label>
+
+              <div
+                class="input-box locked-field"
+                id="countryBox"
+              >
+
+                <input
+                  id="profileCountry"
+                  type="text"
+                  value="${
+                    user.profile?.country ||
+                    ""
+                  }"
+                  disabled
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="input-row">
+
+              <label>
+                Weight (kg)
+              </label>
+
+              <div
+                class="input-box locked-field"
+                id="weightBox"
+              >
+
+                <input
+                  id="profileWeight"
+                  type="number"
+                  value="${
+                    user.profile?.weight ||
+                    ""
+                  }"
+                  disabled
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="input-row">
+
+              <label>
+                Height (cm)
+              </label>
+
+              <div
+                class="input-box locked-field"
+                id="heightBox"
+              >
+
+                <input
+                  id="profileHeight"
+                  type="number"
+                  value="${
+                    user.profile?.height ||
+                    ""
+                  }"
+                  disabled
+                >
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            id="saveProfileBtn"
+            class="primary-btn hidden-btn"
+            type="button"
+          >
+            Save fixed profile
+          </button>
+
+
+          <p
+            id="profileEditMessage"
+            class="message-text"
+          ></p>
+
+        </div>
+
+
+        <div class="card">
+
           <h2>
-            Baseline
+            Baseline Assessment
           </h2>
+
+          <p class="section-subtitle">
+
+            Your baseline is separate from your
+            Daily Check-Ins. Retaking it creates
+            a new baseline record without deleting
+            your previous baseline history.
+
+          </p>
+
 
           <div class="info-table">
 
             <div class="info-row">
-              <strong>Age:</strong>
-              ${user.profile?.age || "--"}
+
+              <strong>
+                Baselines completed:
+              </strong>
+
+              ${baselineCount}
+
             </div>
 
-            <div class="info-row">
-              <strong>Sex:</strong>
-              ${user.profile?.sex || "--"}
-            </div>
 
-            <div class="info-row">
-              <strong>Country:</strong>
-              ${user.profile?.country || "--"}
-            </div>
+            ${
+              user.baseline
+                ?.scores
 
-            <div class="info-row">
-              <strong>Weight:</strong>
-              ${user.profile?.weight || "--"} kg
-            </div>
+                ? `
+                    <div class="info-row">
 
-            <div class="info-row">
-              <strong>Height:</strong>
-              ${user.profile?.height || "--"} cm
-            </div>
+                      <strong>
+                        Current baseline score:
+                      </strong>
+
+                      ${
+                        user.baseline
+                          .scores
+                          .overall
+                      }/100
+
+                    </div>
+                  `
+
+                : ""
+            }
 
           </div>
+
+
+          <button
+            id="retakeBaselineBtn"
+            class="secondary-btn"
+            type="button"
+            style="margin-top:14px;"
+          >
+            Retake baseline
+          </button>
 
         </div>
 
@@ -1191,45 +1745,85 @@ document.addEventListener(
             Your Neurovia data
           </h2>
 
+
           <div class="info-table">
 
+
             <div class="info-row">
+
               <strong>
                 Daily check-ins:
               </strong>
+
               ${getDates().length}
+
             </div>
 
+
             <div class="info-row">
+
               <strong>
                 Calendar events:
               </strong>
+
               ${
                 user.brainCalendar
-                  ?.length || 0
+                  ?.length ||
+                0
               }
+
             </div>
 
+
             <div class="info-row">
+
               <strong>
                 Journal entries:
               </strong>
+
               ${
                 user.brainJournal
-                  ?.length || 0
+                  ?.length ||
+                0
               }
+
             </div>
+
+
+            <div class="info-row">
+
+              <strong>
+                Weekly check-ins:
+              </strong>
+
+              ${
+                user.weeklyCheckins
+                  ?.length ||
+                0
+              }
+
+            </div>
+
 
             ${
               latest
+
                 ? `
                     <div class="info-row">
+
                       <strong>
-                        Latest check-in:
+                        Latest Daily Check-In:
                       </strong>
-                      ${latest.date}
+
+                      ${
+                        formatDateKey(
+                          latest.date
+                        )
+                      }
+
                     </div>
                   `
+
                 : ""
             }
 
@@ -1240,30 +1834,283 @@ document.addEventListener(
 
         <div class="profile-actions">
 
+
           <button
             id="profileDailyBtn"
             class="primary-btn"
+            type="button"
           >
             Daily check-in
           </button>
 
+
+          <button
+            id="weeklyCheckinBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Weekly check-in
+          </button>
+
+
           <button
             id="profilePreviousBtn"
             class="secondary-btn"
+            type="button"
           >
             Edit previous days
           </button>
 
+
           <button
             id="logoutBtn"
             class="ghost-btn"
+            type="button"
           >
             Log out
           </button>
 
+
         </div>
       `;
 
+
+      /*
+        Fixed profile editing
+      */
+
+      const editProfileBtn =
+        document.getElementById(
+          "editProfileBtn"
+        );
+
+
+      const saveProfileBtn =
+        document.getElementById(
+          "saveProfileBtn"
+        );
+
+
+      const profileFields = [
+
+        {
+          input:
+            "profileAge",
+
+          box:
+            "ageBox"
+        },
+
+        {
+          input:
+            "profileSex",
+
+          box:
+            "sexBox"
+        },
+
+        {
+          input:
+            "profileCountry",
+
+          box:
+            "countryBox"
+        },
+
+        {
+          input:
+            "profileWeight",
+
+          box:
+            "weightBox"
+        },
+
+        {
+          input:
+            "profileHeight",
+
+          box:
+            "heightBox"
+        }
+
+      ];
+
+
+      editProfileBtn.onclick =
+        function () {
+
+          profileFields.forEach(
+            field => {
+
+              document
+                .getElementById(
+                  field.input
+                )
+                .disabled =
+                false;
+
+
+              document
+                .getElementById(
+                  field.box
+                )
+                .classList
+                .remove(
+                  "locked-field"
+                );
+
+            }
+          );
+
+
+          editProfileBtn
+            .classList
+            .add(
+              "hidden-btn"
+            );
+
+
+          saveProfileBtn
+            .classList
+            .remove(
+              "hidden-btn"
+            );
+        };
+
+
+      saveProfileBtn.onclick =
+        function () {
+
+          const age =
+            document
+              .getElementById(
+                "profileAge"
+              )
+              .value
+              .trim();
+
+
+          const sex =
+            document
+              .getElementById(
+                "profileSex"
+              )
+              .value;
+
+
+          const country =
+            document
+              .getElementById(
+                "profileCountry"
+              )
+              .value
+              .trim();
+
+
+          const weight =
+            document
+              .getElementById(
+                "profileWeight"
+              )
+              .value
+              .trim();
+
+
+          const height =
+            document
+              .getElementById(
+                "profileHeight"
+              )
+              .value
+              .trim();
+
+
+          const message =
+            document
+              .getElementById(
+                "profileEditMessage"
+              );
+
+
+          if (
+            !age ||
+            !sex ||
+            !country ||
+            !weight ||
+            !height
+          ) {
+
+            message.textContent =
+              "Please complete all fixed profile fields.";
+
+            message.classList.add(
+              "error"
+            );
+
+            return;
+          }
+
+
+          const updated =
+            getCurrentUserObject();
+
+
+          updated.profile = {
+
+            ...updated.profile,
+
+            age,
+
+            sex,
+
+            country,
+
+            weight,
+
+            height
+
+          };
+
+
+          /*
+            Keep the static answers
+            synchronized with the
+            fixed profile.
+          */
+
+          updated.onboardingAnswers =
+            updated.onboardingAnswers ||
+            {};
+
+
+          updated.onboardingAnswers.age =
+            age;
+
+          updated.onboardingAnswers.sex =
+            sex;
+
+          updated.onboardingAnswers.country =
+            country;
+
+          updated.onboardingAnswers.weight =
+            weight;
+
+          updated.onboardingAnswers.height =
+            height;
+
+
+          updateUser(
+            updated
+          );
+
+
+          renderProfile();
+        };
+
+
+      /*
+        Daily
+      */
 
       document
         .getElementById(
@@ -1271,10 +2118,31 @@ document.addEventListener(
         )
         .onclick =
         function () {
+
           window.location.href =
             "daily-update.html";
         };
 
+
+      /*
+        Weekly Check-In
+      */
+
+      document
+        .getElementById(
+          "weeklyCheckinBtn"
+        )
+        .onclick =
+        function () {
+
+          window.location.href =
+            "weekly-checkin.html";
+        };
+
+
+      /*
+        Previous days
+      */
 
       document
         .getElementById(
@@ -1282,10 +2150,41 @@ document.addEventListener(
         )
         .onclick =
         function () {
+
           window.location.href =
             "previous-days.html";
         };
 
+
+      /*
+        Retake Baseline
+
+        We use a session flag so
+        onboarding knows this is a
+        retake rather than first setup.
+      */
+
+      document
+        .getElementById(
+          "retakeBaselineBtn"
+        )
+        .onclick =
+        function () {
+
+          sessionStorage.setItem(
+            "neurovia_retake_baseline",
+            "true"
+          );
+
+
+          window.location.href =
+            "onboarding.html";
+        };
+
+
+      /*
+        Logout
+      */
 
       document
         .getElementById(
@@ -1296,16 +2195,27 @@ document.addEventListener(
 
           logoutUser();
 
+
           window.location.href =
             "index.html";
         };
     }
 
 
+    /*
+      =========================
+      RENDER APP
+      =========================
+    */
+
     function renderEverything() {
+
       renderHome();
+
       renderCalendar();
+
       renderJournal();
+
       renderProfile();
     }
 
@@ -1313,100 +2223,140 @@ document.addEventListener(
     renderEverything();
 
 
+    /*
+      =========================
+      BOTTOM NAVIGATION
+      =========================
+    */
+
     document
       .querySelectorAll(
         ".tab-btn"
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          "click",
-          function () {
+          button.addEventListener(
+            "click",
+            function () {
 
-            document
-              .querySelectorAll(
-                ".tab-btn"
-              )
-              .forEach(
-                item =>
-                  item.classList.remove(
-                    "active"
-                  )
-              );
-
-            button.classList.add(
-              "active"
-            );
-
-
-            homeTab.classList.add(
-              "hidden"
-            );
-
-            calendarTab.classList.add(
-              "hidden"
-            );
-
-            journalTab.classList.add(
-              "hidden"
-            );
-
-            profileTab.classList.add(
-              "hidden"
-            );
+              document
+                .querySelectorAll(
+                  ".tab-btn"
+                )
+                .forEach(
+                  item =>
+                    item
+                      .classList
+                      .remove(
+                        "active"
+                      )
+                );
 
 
-            const tab =
-              button.dataset.tab;
+              button
+                .classList
+                .add(
+                  "active"
+                );
 
 
-            if (tab === "home") {
-              homeTab.classList.remove(
-                "hidden"
-              );
-            }
+              homeTab
+                .classList
+                .add(
+                  "hidden"
+                );
 
-
-            if (
-              tab === "calendar"
-            ) {
-              renderCalendar();
 
               calendarTab
                 .classList
-                .remove(
+                .add(
                   "hidden"
                 );
-            }
 
-
-            if (
-              tab === "journal"
-            ) {
-              renderJournal();
 
               journalTab
                 .classList
-                .remove(
+                .add(
                   "hidden"
                 );
-            }
 
-
-            if (
-              tab === "profile"
-            ) {
-              renderProfile();
 
               profileTab
                 .classList
-                .remove(
+                .add(
                   "hidden"
                 );
+
+
+              const tab =
+                button.dataset.tab;
+
+
+              if (
+                tab ===
+                "home"
+              ) {
+
+                renderHome();
+
+                homeTab
+                  .classList
+                  .remove(
+                    "hidden"
+                  );
+              }
+
+
+              if (
+                tab ===
+                "calendar"
+              ) {
+
+                renderCalendar();
+
+                calendarTab
+                  .classList
+                  .remove(
+                    "hidden"
+                  );
+              }
+
+
+              if (
+                tab ===
+                "journal"
+              ) {
+
+                renderJournal();
+
+                journalTab
+                  .classList
+                  .remove(
+                    "hidden"
+                  );
+              }
+
+
+              if (
+                tab ===
+                "profile"
+              ) {
+
+                renderProfile();
+
+                profileTab
+                  .classList
+                  .remove(
+                    "hidden"
+                  );
+              }
+
             }
-          }
-        );
-      });
+          );
+
+        }
+      );
 
   }
 );
