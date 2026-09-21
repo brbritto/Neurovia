@@ -1,202 +1,263 @@
-function classifyScore(score) {
-  if (score >= 80) return "Doing good";
-  if (score >= 60) return "Stable";
-  return "Needs improvement";
+function classifyReadiness(score) {
+  if (score >= 80) return "Ready";
+  if (score >= 65) return "Balanced";
+  if (score >= 45) return "Under strain";
+
+  return "Recovery needed";
 }
 
-function calculateSleepDebt(age, logs) {
-  const { min } = recommendedSleepRange(age);
-  let debt = 0;
+function getRecentLogs(user, limit = 7) {
+  if (!user?.dailyLogs) return [];
 
-  logs.forEach(log => {
-    const hours = calculateSleepHours(log.sleepTime, log.wakeTime);
-    if (hours < min) debt += (min - hours);
-  });
-
-  return Number(debt.toFixed(1));
+  return Object.keys(user.dailyLogs)
+    .sort()
+    .slice(-limit)
+    .map(date => user.dailyLogs[date]);
 }
 
-function calculateSleepVariability(logs) {
-  const values = logs
-    .map(log => log.sleepTime)
-    .filter(Boolean)
-    .map(parseTimeToMinutes);
+function buildMainInsight(
+  user,
+  latestLog,
+  scores,
+  recentLogs
+) {
+  const concern =
+    user.mainConcern ||
+    "My routine feels unstable";
 
-  if (values.length < 2) return 0;
-  return Math.round((Math.max(...values) - Math.min(...values)) / 60);
-}
+  const sleepDebt =
+    calculateWeeklySleepDebt(
+      user.profile,
+      recentLogs
+    );
 
-function buildMainInsight(user, latestLog, scores, recentLogs) {
-  const concern = user.mainConcern || "My routine feels unstable";
-  const sleepDebt = calculateSleepDebt(user.profile.age, recentLogs);
+  const stress =
+    Number(latestLog.stressLevel || 0);
+
+  const energy =
+    Number(latestLog.energyLevel || 0);
+
+  const workload =
+    Number(latestLog.workloadLevel || 0);
+
+  const focus =
+    Number(latestLog.focusLevel || 0);
 
   if (concern === "I feel exhausted") {
-    if (sleepDebt >= 3 || scores.sleep < 70) {
+
+    if (sleepDebt >= 2) {
       return {
-        title: "Your fatigue may be linked to sleep recovery",
-        text: `Your recent pattern suggests reduced sleep recovery. Estimated sleep debt: ${sleepDebt} hour(s). Your first action should be to recover part of that debt before trying to optimize the rest of your routine.`
+        title:
+          "Sleep recovery may be contributing to your exhaustion",
+
+        explanation:
+          `Your recent sleep pattern shows approximately ${sleepDebt} hours of accumulated sleep debt. That pattern may be contributing to lower energy and recovery today.`,
+
+        action:
+          "Tonight, prioritize enough time in bed to move closer to your recommended sleep range."
       };
     }
-    if (scores.physical < 70) {
+
+    if (energy <= 4 && stress >= 7) {
       return {
-        title: "Your fatigue may be linked to physical recovery inputs",
-        text: `Your hydration, breakfast or exercise pattern may be limiting your energy stability. Start with hydration and a more consistent recovery routine first.`
+        title:
+          "High stress may be reducing your recovery",
+
+        explanation:
+          "Your energy is low while your reported stress is high. Your pattern suggests that recovery demand is currently elevated.",
+
+        action:
+          "Reduce one non-essential demanding task today and protect a low-stimulation recovery period before sleep."
       };
     }
+
+    return {
+      title:
+        "Your energy is currently below your usual capacity",
+
+      explanation:
+        "No single factor clearly explains the pattern yet. Neurovia will become more useful as you build several days of data.",
+
+      action:
+        "Keep today's workload moderate and complete tomorrow's check-in so the trend can be compared."
+    };
   }
 
   if (concern === "I can’t focus") {
-    if (scores.cognitive < 70) {
+
+    if (
+      scores.cognitiveLoad >= 70
+    ) {
       return {
-        title: "Your focus may be limited by cognitive overload",
-        text: `Your recent study rhythm, fatigue pattern and break structure suggest overload. Shorter focused blocks and better break spacing should come before trying to simply study longer.`
+        title:
+          "High cognitive load may be limiting your focus",
+
+        explanation:
+          `Your cognitive load is ${scores.cognitiveLoad}/100. High workload combined with stress and reduced focus is creating a high-demand pattern today.`,
+
+        action:
+          "Do your next demanding task in one focused block, then take a real break before starting another."
       };
     }
-    if (scores.sleep < 70) {
+
+    if (scores.sleep < 65) {
       return {
-        title: "Your focus may be limited by poor sleep recovery",
-        text: `Your recent sleep pattern may be contributing to reduced concentration and mental endurance. Sleep stabilization should be your first correction.`
+        title:
+          "Sleep recovery may be affecting your concentration",
+
+        explanation:
+          `You slept approximately ${scores.sleepHours} hours and your sleep recovery score is ${scores.sleep}/100.`,
+
+        action:
+          "Prioritize your sleep window tonight instead of extending work later into the evening."
       };
     }
+
+    return {
+      title:
+        "Your focus difficulty is not explained by one dominant factor yet",
+
+      explanation:
+        "Your current sleep and cognitive-load signals do not show one strong driver. More daily data will help distinguish a temporary low-focus day from a recurring pattern.",
+
+      action:
+        "Protect one distraction-free work block today and check whether focus changes afterward."
+    };
   }
 
   if (concern === "I wake up tired") {
+
+    if (scores.sleepDebt > 0) {
+      return {
+        title:
+          "Your sleep duration may not be supporting full recovery",
+
+        explanation:
+          `You slept approximately ${scores.sleepHours} hours. Today's estimated sleep deficit is ${scores.sleepDebt} hour(s).`,
+
+        action:
+          "Give yourself a longer sleep opportunity tonight rather than trying to compensate with more work or screen time."
+      };
+    }
+
     return {
-      title: "Your morning tiredness may be linked to sleep quality",
-      text: `Your current sleep duration, recovery perception and difficulty falling asleep suggest that your sleep may not be restorative enough yet.`
+      title:
+        "Sleep duration alone may not explain your morning fatigue",
+
+      explanation:
+        "Your recorded sleep duration is within the expected range, so Neurovia needs several days of data to determine whether timing, stress or accumulated workload is part of the pattern.",
+
+      action:
+        "Keep your sleep and wake times consistent tonight and continue the daily check-in."
     };
   }
 
-  if (concern === "I feel mentally overloaded") {
+  if (
+    concern ===
+    "I feel mentally overloaded"
+  ) {
+
+    if (
+      workload >= 7 ||
+      scores.cognitiveLoad >= 70
+    ) {
+      return {
+        title:
+          "Your current demand is exceeding your recovery signal",
+
+        explanation:
+          `Your cognitive load is ${scores.cognitiveLoad}/100 while recovery is ${scores.recovery}/100. This pattern suggests that mental demand is currently high relative to recovery.`,
+
+        action:
+          "Choose one priority task for your next work period instead of switching between multiple demanding tasks."
+      };
+    }
+
     return {
-      title: "Your current pattern suggests mental overload",
-      text: `Your stress, fatigue and study pattern suggest that the issue is not only volume, but the way effort and recovery are distributed through the week.`
+      title:
+        "Your overload may be building across the week",
+
+      explanation:
+        "Today's workload alone is not extremely high. Repeated daily check-ins will help Neurovia identify whether the problem is cumulative rather than isolated.",
+
+      action:
+        "Avoid adding unnecessary tasks today and complete the next daily check-in."
+    };
+  }
+
+  if (scores.cognitiveLoad >= 70) {
+    return {
+      title:
+        "Cognitive demand is your strongest signal today",
+
+      explanation:
+        `Your cognitive load is ${scores.cognitiveLoad}/100, which is currently your most important strain signal.`,
+
+      action:
+        "Reduce task switching and complete your highest-priority task before adding new demands."
+    };
+  }
+
+  if (scores.recovery < 55) {
+    return {
+      title:
+        "Recovery is your main limiting factor today",
+
+      explanation:
+        `Your recovery score is ${scores.recovery}/100. Sleep, energy and stress are combining into a lower-recovery pattern.`,
+
+      action:
+        "Keep today's workload below your maximum capacity and prioritize recovery tonight."
     };
   }
 
   return {
-    title: "Your routine may need stabilization",
-    text: `Your current data suggests that routine consistency matters more than one isolated metric right now. Regular sleep, hydration and study structure should come first.`
+    title:
+      "Your current pattern looks relatively balanced",
+
+    explanation:
+      "No major strain signal is dominating today's check-in.",
+
+    action:
+      "Maintain your current routine and continue checking in so Neurovia can detect changes early."
   };
 }
 
-function buildImprovementCards(profile, latestLog, scores, recentLogs) {
-  const cards = [];
-
-  const sleepDebt = calculateSleepDebt(profile.age, recentLogs);
-  const variability = calculateSleepVariability(recentLogs);
-  const targetRange = recommendedSleepRange(profile.age);
-  const waterGap = Number((scores.waterTarget - scores.actualWater).toFixed(1));
-
-  if (scores.sleep < 80) {
-    let sleepAction = "";
-
-    if (sleepDebt >= 7) {
-      sleepAction = `You accumulated about ${sleepDebt} hours of sleep debt. For the next 4 nights, add 60 to 90 minutes of sleep. Keep the same wake-up time every day. After the recovery phase, keep a stable sleep window for 7 days.`;
-    } else if (sleepDebt >= 3) {
-      sleepAction = `You have a moderate sleep debt of about ${sleepDebt} hours. Add 45 to 60 minutes of sleep for the next 3 nights, then keep bedtime and wake-up time stable for one week.`;
-    } else if (variability >= 2) {
-      sleepAction = `Your sleep schedule is inconsistent. Your bedtime varies by about ${variability} hours. Keep bedtime and wake-up time within a 60-minute range for the next 7 days.`;
-    } else {
-      sleepAction = `Your last recorded sleep was ${scores.sleepHours} hours. Your target for your age is ${targetRange.min} to ${targetRange.max} hours. Move bedtime earlier by 15 to 30 minutes every 2 nights until you enter that range.`;
-    }
-
-    cards.push({
-      area: "Sleep",
-      issue: `Your sleep score is ${scores.sleep}.`,
-      why: `Your recent sleep pattern is below the optimal range for your age. Estimated weekly sleep debt: ${sleepDebt} hours.`,
-      action: sleepAction
-    });
+function buildWeeklyInsight(
+  currentScores,
+  previousScores
+) {
+  if (!previousScores) {
+    return {
+      title: "Building your baseline",
+      text:
+        "Keep checking in. Neurovia needs more than one day to identify a meaningful trend."
+    };
   }
 
-  if (scores.stress < 80) {
-    const stress = Number(latestLog.stressLevel || 0);
-    let stressAction = "";
+  const difference =
+    currentScores.brainReadiness -
+    previousScores.brainReadiness;
 
-    if (stress >= 8) {
-      stressAction = "For the next 3 days, reduce long study blocks, split demanding tasks into shorter sessions, and reserve one 20-minute decompression block every day.";
-    } else if (stress >= 6) {
-      stressAction = "Move your hardest task to your first strong-energy block of the day and avoid heavy late-night study this week.";
-    } else {
-      stressAction = "Protect the first hours after waking for focused work and keep evening stimulation lower.";
-    }
-
-    cards.push({
-      area: "Stress Control",
-      issue: `Your stress control score is ${scores.stress}.`,
-      why: `Your reported stress level and fatigue pattern suggest recovery pressure.`,
-      action: stressAction
-    });
+  if (difference >= 8) {
+    return {
+      title: "Readiness is improving",
+      text:
+        `Your Brain Readiness increased by ${difference} points compared with your previous check-in.`
+    };
   }
 
-  if (scores.cognitive < 80) {
-    let cognitiveAction = "";
-
-    if (latestLog.studyHours === "More than 6 hours" && (latestLog.studyBreaks === "Almost never" || latestLog.studyBreaks === "Every 2+ hours")) {
-      cognitiveAction = "Start using 50 minutes of study followed by 10 minutes of break for every long block. Maintain this structure for the next 7 days.";
-    } else if (latestLog.daytimeFatigue === "Often" || latestLog.daytimeFatigue === "Always") {
-      cognitiveAction = "Reduce passive screen use at night, and place your most demanding study task in the first half of the day.";
-    } else {
-      cognitiveAction = "Keep break intervals under 90 minutes and avoid long uninterrupted work sessions.";
-    }
-
-    cards.push({
-      area: "Cognitive Load",
-      issue: `Your cognitive load score is ${scores.cognitive}.`,
-      why: `Your study hours, fatigue pattern and break structure suggest unnecessary strain.`,
-      action: cognitiveAction
-    });
-  }
-
-  if (scores.physical < 80) {
-    let physicalAction = "";
-
-    if (waterGap > 1) {
-      physicalAction = `Your estimated hydration target is ${scores.waterTarget} L/day and your last log suggests about ${scores.actualWater} L/day. Raise intake gradually by 300 to 500 mL earlier in the day, then reassess after 5 to 7 days.`;
-    } else if (latestLog.exerciseFrequency === "Never") {
-      physicalAction = "Start with 2 sessions per week of 20 to 30 minutes and build consistency before increasing volume.";
-    } else if (latestLog.breakfastHabits === "I never eat breakfast" || latestLog.breakfastHabits === "I rarely eat breakfast") {
-      physicalAction = "Start with a small morning meal or snack for 5 consecutive days, then reassess energy stability.";
-    } else {
-      physicalAction = "Improve hydration distribution through the day and keep exercise consistent across the week.";
-    }
-
-    cards.push({
-      area: "Physical Wellness",
-      issue: `Your physical wellness score is ${scores.physical}.`,
-      why: `Hydration, exercise and breakfast patterns are part of your current recovery baseline.`,
-      action: physicalAction
-    });
-  }
-
-  if (!cards.length) {
-    cards.push({
-      area: "Overall",
-      issue: "No major weak area was detected.",
-      why: "Your current pattern looks relatively balanced.",
-      action: "Keep updating your daily data so the app can detect subtle changes over time."
-    });
-  }
-
-  return cards;
-}
-
-function buildHomeSummary(todayScores, previousScores, weeklyAverage) {
-  let trendLabel = "Insufficient history";
-  let trendValue = 0;
-  let previousStatus = "No previous day";
-
-  if (previousScores) {
-    trendValue = todayScores.overall - previousScores.overall;
-    trendLabel = trendValue > 3 ? "Improving" : trendValue < -3 ? "Declining" : "Stable";
-    previousStatus = classifyScore(previousScores.overall);
+  if (difference <= -8) {
+    return {
+      title: "Readiness has declined",
+      text:
+        `Your Brain Readiness decreased by ${Math.abs(difference)} points compared with your previous check-in.`
+    };
   }
 
   return {
-    todayStatus: classifyScore(todayScores.overall),
-    previousStatus,
-    weeklyStatus: weeklyAverage ? classifyScore(weeklyAverage.overall) : "No weekly baseline",
-    trendLabel,
-    trendValue
+    title: "Your readiness is relatively stable",
+    text:
+      "Your latest check-ins do not show a major change in overall readiness."
   };
 }
