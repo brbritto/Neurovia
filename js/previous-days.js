@@ -1,108 +1,185 @@
 document.addEventListener("DOMContentLoaded", function () {
+
   const user = getCurrentUserObject();
+
   if (!user || !user.onboardingCompleted) {
     window.location.href = "index.html";
     return;
   }
 
-  function mapWater(value) {
-    if (value < 1) return "Less than 1 liter";
-    if (value <= 2) return "1 to 2 liters";
-    if (value <= 3) return "2 to 3 liters";
-    return "More than 3 liters";
+  const selectedDate =
+    document.getElementById("selectedDate");
+
+  const message =
+    document.getElementById("previousMessage");
+
+  const today = todayKey();
+
+  selectedDate.max = today;
+
+  function setValue(id, value) {
+    const element =
+      document.getElementById(id);
+
+    if (element && value !== undefined && value !== null) {
+      element.value = value;
+    }
   }
 
-  function mapExercise(value) {
-    return value === "Yes" ? "1 time per week" : "Never";
+  function clearFields() {
+    [
+      "sleepTime",
+      "wakeTime",
+      "sleepQuality",
+      "stressLevel",
+      "energyLevel",
+      "workloadLevel",
+      "focusLevel"
+    ].forEach(id => {
+      document.getElementById(id).value = "";
+    });
   }
 
-  function mapBreakfast(value) {
-    return value === "Yes" ? "I always eat breakfast" : "I never eat breakfast";
+  function loadExistingDay(date) {
+
+    const freshUser =
+      getCurrentUserObject();
+
+    const log =
+      freshUser.dailyLogs?.[date];
+
+    clearFields();
+
+    message.textContent = "";
+    message.classList.remove("error");
+
+    if (!log) {
+      message.textContent =
+        "No check-in exists for this date yet. You can create one.";
+      return;
+    }
+
+    setValue("sleepTime", log.sleepTime);
+    setValue("wakeTime", log.wakeTime);
+    setValue("sleepQuality", log.sleepQuality);
+    setValue("stressLevel", log.stressLevel);
+    setValue("energyLevel", log.energyLevel);
+    setValue("workloadLevel", log.workloadLevel);
+    setValue("focusLevel", log.focusLevel);
+
+    message.textContent =
+      "Existing check-in loaded. Edit anything you want and save.";
   }
 
-  function mapYesNoDifficulty(value) {
-    return value === "Yes" ? "Often" : "Never";
-  }
+  selectedDate.addEventListener("change", function () {
 
-  function mapYesNoFatigue(value) {
-    return value === "Yes" ? "Often" : "Never";
-  }
+    if (!selectedDate.value) return;
 
-  function mapRested(value) {
-    return {
-      "0": "Never",
-      "1": "Rarely",
-      "2": "Sometimes",
-      "3": "Often",
-      "4": "Always"
-    }[String(value)] || "Sometimes";
-  }
+    if (selectedDate.value > today) {
+      selectedDate.value = "";
+      message.textContent =
+        "You cannot create a daily check-in for a future date.";
+      message.classList.add("error");
+      return;
+    }
 
-  function mapEnvironment(value) {
-    return {
-      "0": "Very distracting",
-      "1": "Noisy or poorly lit",
-      "2": "Moderately distracting",
-      "3": "Mostly quiet with good lighting",
-      "4": "Very quiet and comfortable"
-    }[String(value)] || "Moderately distracting";
-  }
-
-  function mapScreen(value) {
-    if (value < 1) return "Less than 1 hour";
-    if (value <= 2) return "1 to 2 hours";
-    if (value <= 3) return "2 to 3 hours";
-    return "More than 3 hours";
-  }
-
-  function mapStudyHours(value) {
-    if (value < 1) return "Less than 1 hour";
-    if (value <= 2) return "1 to 2 hours";
-    if (value <= 4) return "3 to 4 hours";
-    if (value <= 6) return "5 to 6 hours";
-    return "More than 6 hours";
-  }
-
-  function mapBreaks(value) {
-    return {
-      "0": "Almost never",
-      "1": "Every 2+ hours",
-      "2": "Every 60 to 90 minutes",
-      "3": "Every 30 to 60 minutes",
-      "4": "Very frequently"
-    }[String(value)] || "Every 60 to 90 minutes";
-  }
-
-  document.getElementById("previousDayForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const updated = getCurrentUserObject();
-    const selectedDate = document.getElementById("selectedDate").value;
-
-    const waterValue = Number(document.getElementById("waterLiters").value);
-    const studyHoursValue = Number(document.getElementById("studyHoursToday").value);
-    const screenValue = Number(document.getElementById("screenHoursToday").value);
-
-    const log = {
-      sleepTime: document.getElementById("sleepTime").value.trim(),
-      wakeTime: document.getElementById("wakeTime").value.trim(),
-      waterIntake: mapWater(waterValue),
-      exerciseFrequency: mapExercise(document.getElementById("exerciseToday").value),
-      studyHours: mapStudyHours(studyHoursValue),
-      breakfastHabits: mapBreakfast(document.getElementById("breakfastToday").value),
-      fallAsleepDifficulty: mapYesNoDifficulty(document.getElementById("difficultyToday").value),
-      daytimeFatigue: mapYesNoFatigue(document.getElementById("fatigueToday").value),
-      stressLevel: document.getElementById("stressToday").value.trim(),
-      rested: mapRested(document.getElementById("restedToday").value),
-      studyEnvironment: mapEnvironment(document.getElementById("environmentToday").value),
-      screenUseBeforeSleep: mapScreen(screenValue),
-      studyBreaks: mapBreaks(document.getElementById("breaksToday").value)
-    };
-
-    const scores = calculateScores(updated.profile, log);
-    updated.dailyLogs[selectedDate] = { ...log, scores };
-    updateUser(updated);
-
-    window.location.href = "dashboard.html";
+    loadExistingDay(
+      selectedDate.value
+    );
   });
+
+  document
+    .getElementById("previousDayForm")
+    .addEventListener("submit", function (event) {
+
+      event.preventDefault();
+
+      const date =
+        selectedDate.value;
+
+      if (!date) {
+        message.textContent =
+          "Please select a date.";
+        message.classList.add("error");
+        return;
+      }
+
+      if (date > today) {
+        message.textContent =
+          "Future dates belong in the Brain Calendar, not the Daily Check-In.";
+        message.classList.add("error");
+        return;
+      }
+
+      const updated =
+        getCurrentUserObject();
+
+      updated.dailyLogs =
+        updated.dailyLogs || {};
+
+      const log = {
+        sleepTime:
+          document.getElementById("sleepTime").value,
+
+        wakeTime:
+          document.getElementById("wakeTime").value,
+
+        sleepQuality:
+          Number(
+            document.getElementById("sleepQuality").value
+          ),
+
+        stressLevel:
+          Number(
+            document.getElementById("stressLevel").value
+          ),
+
+        energyLevel:
+          Number(
+            document.getElementById("energyLevel").value
+          ),
+
+        workloadLevel:
+          Number(
+            document.getElementById("workloadLevel").value
+          ),
+
+        focusLevel:
+          Number(
+            document.getElementById("focusLevel").value
+          )
+      };
+
+      const scores =
+        calculateScores(
+          updated.profile,
+          log
+        );
+
+      updated.dailyLogs[date] = {
+        ...log,
+        scores,
+        updatedAt:
+          new Date().toISOString()
+      };
+
+      updateUser(updated);
+
+      localStorage.setItem(
+        "neurovia_return_tab",
+        "profile"
+      );
+
+      window.location.href =
+        "dashboard.html";
+    });
+
+  document
+    .getElementById("backDashboardBtn")
+    .addEventListener("click", function () {
+
+      window.location.href =
+        "dashboard.html";
+    });
+
 });
