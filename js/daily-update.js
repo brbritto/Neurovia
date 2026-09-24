@@ -15,6 +15,7 @@ document.addEventListener(
         "index.html";
 
       return;
+
     }
 
 
@@ -22,6 +23,21 @@ document.addEventListener(
       document.getElementById(
         "dailyUpdateForm"
       );
+
+
+    function numberValue(
+      id
+    ) {
+
+      return Number(
+        document
+          .getElementById(
+            id
+          )
+          .value
+      );
+
+    }
 
 
     form.addEventListener(
@@ -33,6 +49,13 @@ document.addEventListener(
 
         const updated =
           getCurrentUserObject();
+
+
+        /*
+          Everything below represents
+          something that actually
+          happened on this day.
+        */
 
 
         const log = {
@@ -54,55 +77,70 @@ document.addEventListener(
 
 
           sleepQuality:
-            Number(
-              document
-                .getElementById(
-                  "sleepQuality"
-                )
-                .value
+            numberValue(
+              "sleepQuality"
             ),
 
 
+          restedLevel:
+            numberValue(
+              "restedLevel"
+            ),
+
+
+          screenBeforeSleep:
+            document
+              .getElementById(
+                "screenBeforeSleep"
+              )
+              .value,
+
+
           stressLevel:
-            Number(
-              document
-                .getElementById(
-                  "stressLevel"
-                )
-                .value
+            numberValue(
+              "stressLevel"
             ),
 
 
           energyLevel:
-            Number(
-              document
-                .getElementById(
-                  "energyLevel"
-                )
-                .value
+            numberValue(
+              "energyLevel"
             ),
 
 
           workloadLevel:
-            Number(
-              document
-                .getElementById(
-                  "workloadLevel"
-                )
-                .value
+            numberValue(
+              "workloadLevel"
             ),
 
 
+          distractionLevel:
+            numberValue(
+              "distractionLevel"
+            ),
+
+
+          breaksLevel:
+            document
+              .getElementById(
+                "breaksLevel"
+              )
+              .value,
+
+
           focusLevel:
-            Number(
-              document
-                .getElementById(
-                  "focusLevel"
-                )
-                .value
+            numberValue(
+              "focusLevel"
             )
 
         };
+
+
+        /*
+          The scoring engine uses
+          the user's Baseline context
+          plus today's signals.
+        */
 
 
         const scores =
@@ -121,6 +159,12 @@ document.addEventListener(
           {};
 
 
+        const previous =
+          updated.dailyLogs[
+            today
+          ];
+
+
         updated.dailyLogs[
           today
         ] = {
@@ -128,6 +172,20 @@ document.addEventListener(
           ...log,
 
           scores,
+
+
+          /*
+            Preserve original creation
+            time when today's check-in
+            is edited/replaced.
+          */
+
+
+          createdAt:
+            previous?.createdAt ||
+            new Date()
+              .toISOString(),
+
 
           updatedAt:
             new Date()
