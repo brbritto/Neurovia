@@ -55,16 +55,6 @@ function getIntensityLabel(intensity) {
 }
 
 
-/*
-  Event type matters separately
-  from the user's mental-demand choice.
-
-  Physical activity receives the
-  smallest cognitive-load multiplier.
-
-  These are Neurovia planning
-  heuristics, not clinical values.
-*/
 function getEventTypeMultiplier(type) {
   const normalized =
     String(type || "")
@@ -82,10 +72,12 @@ function getEventTypeMultiplier(type) {
     "studies": 0.90,
     "study": 0.90,
 
+    "class / lesson": 0.75,
+    "class": 0.75,
+    "lesson": 0.75,
+
     "exam": 1.15,
-
     "presentation": 1.00,
-
     "other": 0.80
   };
 
@@ -96,24 +88,24 @@ function getEventTypeMultiplier(type) {
 }
 
 
-function addBrainEvent(
-  user,
-  eventData
+function createBrainEvent(
+  eventData,
+  date,
+  seriesId = null
 ) {
-  ensureBrainCalendar(user);
-
-  const event = {
+  return {
     id:
       Date.now().toString() +
       Math.random()
         .toString(16)
         .slice(2),
 
+    seriesId,
+
     title:
       eventData.title,
 
-    date:
-      eventData.date,
+    date,
 
     startTime:
       eventData.startTime || "",
@@ -132,10 +124,260 @@ function addBrainEvent(
     createdAt:
       new Date().toISOString()
   };
+}
+
+
+function addBrainEvent(
+  user,
+  eventData
+) {
+  ensureBrainCalendar(user);
+
+  const event =
+    createBrainEvent(
+      eventData,
+      eventData.date
+    );
 
   user.brainCalendar.push(event);
 
   return event;
+}
+
+
+/*
+  ==========================================
+  REPEATING EVENTS
+  ==========================================
+
+  repeatType:
+  none
+  daily
+  weekdays
+  weekly
+  custom
+
+  customDays:
+  [1, 3, 5]
+  = Monday, Wednesday, Friday
+
+  JavaScript:
+  Sunday = 0
+  Monday = 1
+  ...
+  Saturday = 6
+*/
+
+
+function addDaysToKey(
+  dateKey,
+  numberOfDays
+) {
+  const date =
+    dateFromKey(dateKey);
+
+  if (!date) {
+    return dateKey;
+  }
+
+  date.setDate(
+    date.getDate() +
+    numberOfDays
+  );
+
+  return localDateKey(date);
+}
+
+
+function getDayOfWeek(
+  dateKey
+) {
+  const date =
+    dateFromKey(dateKey);
+
+  if (!date) {
+    return null;
+  }
+
+  return date.getDay();
+}
+
+
+function shouldCreateOnDate(
+  startDate,
+  currentDate,
+  repeatType,
+  customDays = []
+) {
+  if (
+    currentDate === startDate
+  ) {
+    return true;
+  }
+
+
+  if (
+    repeatType === "daily"
+  ) {
+    return true;
+  }
+
+
+  if (
+    repeatType === "weekdays"
+  ) {
+    const weekday =
+      getDayOfWeek(
+        currentDate
+      );
+
+    return (
+      weekday >= 1 &&
+      weekday <= 5
+    );
+  }
+
+
+  if (
+    repeatType === "weekly"
+  ) {
+    return (
+      getDayOfWeek(
+        currentDate
+      ) ===
+      getDayOfWeek(
+        startDate
+      )
+    );
+  }
+
+
+  if (
+    repeatType === "custom"
+  ) {
+    const weekday =
+      getDayOfWeek(
+        currentDate
+      );
+
+    return customDays
+      .map(Number)
+      .includes(
+        weekday
+      );
+  }
+
+
+  return false;
+}
+
+
+function addRecurringBrainEvents(
+  user,
+  eventData
+) {
+  ensureBrainCalendar(user);
+
+  const repeatType =
+    eventData.repeatType ||
+    "none";
+
+
+  if (
+    repeatType === "none"
+  ) {
+    return [
+      addBrainEvent(
+        user,
+        eventData
+      )
+    ];
+  }
+
+
+  const startDate =
+    eventData.date;
+
+  const repeatUntil =
+    eventData.repeatUntil;
+
+
+  if (
+    !startDate ||
+    !repeatUntil
+  ) {
+    return [
+      addBrainEvent(
+        user,
+        eventData
+      )
+    ];
+  }
+
+
+  const seriesId =
+    "series_" +
+    Date.now().toString() +
+    "_" +
+    Math.random()
+      .toString(16)
+      .slice(2);
+
+
+  const createdEvents = [];
+
+  let currentDate =
+    startDate;
+
+  /*
+    Safety limit so an accidental
+    date never creates thousands
+    of localStorage entries.
+  */
+  let safetyCounter = 0;
+
+
+  while (
+    currentDate <= repeatUntil &&
+    safetyCounter < 370
+  ) {
+
+    if (
+      shouldCreateOnDate(
+        startDate,
+        currentDate,
+        repeatType,
+        eventData.customDays || []
+      )
+    ) {
+      const event =
+        createBrainEvent(
+          eventData,
+          currentDate,
+          seriesId
+        );
+
+      user.brainCalendar.push(
+        event
+      );
+
+      createdEvents.push(
+        event
+      );
+    }
+
+
+    currentDate =
+      addDaysToKey(
+        currentDate,
+        1
+      );
+
+    safetyCounter++;
+  }
+
+
+  return createdEvents;
 }
 
 
@@ -149,6 +391,25 @@ function deleteBrainEvent(
     user.brainCalendar.filter(
       event =>
         event.id !== eventId
+    );
+}
+
+
+function deleteBrainEventSeries(
+  user,
+  seriesId
+) {
+  ensureBrainCalendar(user);
+
+  if (!seriesId) {
+    return;
+  }
+
+  user.brainCalendar =
+    user.brainCalendar.filter(
+      event =>
+        event.seriesId !==
+        seriesId
     );
 }
 
@@ -210,9 +471,11 @@ function getRecentReadiness(
           value > 0
       );
 
+
   if (!values.length) {
     return 70;
   }
+
 
   return Math.round(
     values.reduce(
@@ -268,39 +531,36 @@ function getDurationMultiplier(
 }
 
 
-/*
-  Base load:
-
-  intensity
-  × duration
-  × activity type
-
-  This deliberately makes the model
-  less aggressive than the previous
-  version.
-*/
 function getEventLoad(event) {
   const intensity =
     Math.max(
       1,
       Math.min(
         5,
-        Number(event.intensity || 3)
+        Number(
+          event.intensity || 3
+        )
       )
     );
 
+
   const duration =
-    getEventDurationHours(event);
+    getEventDurationHours(
+      event
+    );
+
 
   const durationMultiplier =
     getDurationMultiplier(
       duration
     );
 
+
   const typeMultiplier =
     getEventTypeMultiplier(
       event.type
     );
+
 
   return Number(
     (
@@ -312,17 +572,6 @@ function getEventLoad(event) {
 }
 
 
-/*
-  Calculates how close two events
-  are on the same day.
-
-  Only small gaps add extra load.
-
-  0–30 min  = strongest penalty
-  31–60 min = moderate penalty
-  61–120 min = small penalty
-  >120 min = no penalty
-*/
 function getGapPenalty(
   firstEvent,
   secondEvent
@@ -337,6 +586,7 @@ function getGapPenalty(
       secondEvent.startTime
     );
 
+
   if (
     firstEnd === null ||
     secondStart === null
@@ -344,33 +594,45 @@ function getGapPenalty(
     return 0;
   }
 
+
   const gap =
-    secondStart - firstEnd;
+    secondStart -
+    firstEnd;
+
 
   if (gap < 0) {
     return 1.4;
   }
 
+
   if (gap <= 30) {
     return 1.0;
   }
+
 
   if (gap <= 60) {
     return 0.65;
   }
 
+
   if (gap <= 120) {
     return 0.30;
   }
+
 
   return 0;
 }
 
 
-function calculateSpacingLoad(events) {
-  if (events.length < 2) {
+function calculateSpacingLoad(
+  events
+) {
+  if (
+    events.length < 2
+  ) {
     return 0;
   }
+
 
   const sorted =
     [...events]
@@ -383,7 +645,9 @@ function calculateSpacingLoad(events) {
           )
       );
 
+
   let penalty = 0;
+
 
   for (
     let i = 1;
@@ -397,9 +661,105 @@ function calculateSpacingLoad(events) {
       );
   }
 
+
   return Number(
     penalty.toFixed(2)
   );
+}
+
+
+/*
+  Historical weekday context.
+
+  We only apply it after at least
+  3 logged occurrences of the same
+  weekday. One difficult Wednesday
+  should not permanently label all
+  Wednesdays as difficult.
+*/
+function getWeekdayHistoryModifier(
+  user,
+  targetDate
+) {
+  const target =
+    dateFromKey(
+      targetDate
+    );
+
+  if (!target) {
+    return 1;
+  }
+
+
+  const weekday =
+    target.getDay();
+
+
+  const values =
+    Object
+      .entries(
+        user.dailyLogs || {}
+      )
+      .filter(
+        ([date]) => {
+
+          const parsed =
+            dateFromKey(date);
+
+          return (
+            parsed &&
+            parsed.getDay() ===
+              weekday &&
+            date < targetDate
+          );
+        }
+      )
+      .map(
+        ([, log]) =>
+          Number(
+            log.scores
+              ?.cognitiveLoad
+          )
+      )
+      .filter(
+        value =>
+          Number.isFinite(value)
+      )
+      .slice(-6);
+
+
+  if (
+    values.length < 3
+  ) {
+    return 1;
+  }
+
+
+  const average =
+    values.reduce(
+      (sum, value) =>
+        sum + value,
+      0
+    ) /
+    values.length;
+
+
+  if (average >= 75) {
+    return 1.08;
+  }
+
+
+  if (average >= 60) {
+    return 1.04;
+  }
+
+
+  if (average <= 35) {
+    return 0.97;
+  }
+
+
+  return 1;
 }
 
 
@@ -414,11 +774,13 @@ function calculateCalendarRisk(
       1
     );
 
+
   const exact =
     nearby
       .filter(
         event =>
-          event.date === targetDate
+          event.date ===
+          targetDate
       )
       .sort(
         (a, b) =>
@@ -428,6 +790,7 @@ function calculateCalendarRisk(
             b.startTime || ""
           )
       );
+
 
   const readiness =
     getRecentReadiness(
@@ -445,15 +808,12 @@ function calculateCalendarRisk(
     );
 
 
-  /*
-    Previous/next day have only
-    a small effect now.
-  */
   const nearbyLoad =
     nearby
       .filter(
         event =>
-          event.date !== targetDate
+          event.date !==
+          targetDate
       )
       .reduce(
         (sum, event) =>
@@ -470,48 +830,61 @@ function calculateCalendarRisk(
     );
 
 
-  /*
-    Quantity alone should not make
-    two normal activities "High".
-
-    A small density penalty starts
-    only when the schedule becomes
-    genuinely crowded.
-  */
   let densityLoad = 0;
 
-  if (exact.length >= 4) {
-    densityLoad += 0.75;
+
+  if (
+    exact.length >= 4
+  ) {
+    densityLoad +=
+      0.75;
   }
 
-  if (exact.length >= 6) {
-    densityLoad += 1.25;
+
+  if (
+    exact.length >= 6
+  ) {
+    densityLoad +=
+      1.25;
   }
 
 
-  /*
-    Readiness changes the result,
-    but not aggressively enough to
-    turn a normal schedule into High
-    by itself.
-  */
-  let readinessMultiplier = 1;
+  let readinessMultiplier =
+    1;
 
-  if (readiness >= 80) {
-    readinessMultiplier = 0.90;
+
+  if (
+    readiness >= 80
+  ) {
+    readinessMultiplier =
+      0.90;
   }
 
-  else if (readiness >= 65) {
-    readinessMultiplier = 1.00;
+  else if (
+    readiness >= 65
+  ) {
+    readinessMultiplier =
+      1.00;
   }
 
-  else if (readiness >= 50) {
-    readinessMultiplier = 1.07;
+  else if (
+    readiness >= 50
+  ) {
+    readinessMultiplier =
+      1.07;
   }
 
   else {
-    readinessMultiplier = 1.14;
+    readinessMultiplier =
+      1.14;
   }
+
+
+  const weekdayModifier =
+    getWeekdayHistoryModifier(
+      user,
+      targetDate
+    );
 
 
   const rawLoad =
@@ -525,35 +898,42 @@ function calculateCalendarRisk(
     Number(
       (
         rawLoad *
-        readinessMultiplier
+        readinessMultiplier *
+        weekdayModifier
       ).toFixed(1)
     );
 
 
-  /*
-    Recalibrated thresholds.
-
-    High and Super High now require
-    substantially more accumulated
-    cognitive demand.
-  */
   let tier =
     "Super Light";
 
-  if (adjustedLoad >= 15) {
-    tier = "Super High";
+
+  if (
+    adjustedLoad >= 15
+  ) {
+    tier =
+      "Super High";
   }
 
-  else if (adjustedLoad >= 10.5) {
-    tier = "High";
+  else if (
+    adjustedLoad >= 10.5
+  ) {
+    tier =
+      "High";
   }
 
-  else if (adjustedLoad >= 5.5) {
-    tier = "Moderate";
+  else if (
+    adjustedLoad >= 5.5
+  ) {
+    tier =
+      "Moderate";
   }
 
-  else if (adjustedLoad >= 2.5) {
-    tier = "Light";
+  else if (
+    adjustedLoad >= 2.5
+  ) {
+    tier =
+      "Light";
   }
 
 
@@ -586,15 +966,20 @@ function calculateCalendarRisk(
         spacingLoad.toFixed(1)
       ),
 
+    weekdayModifier,
+
     events:
       nearby
   };
 }
 
 
-function getCalendarSuggestion(risk) {
+function getCalendarSuggestion(
+  risk
+) {
   if (
-    risk.tier === "Super High"
+    risk.tier ===
+    "Super High"
   ) {
     return (
       "This is a very demanding schedule. " +
@@ -602,8 +987,10 @@ function getCalendarSuggestion(risk) {
     );
   }
 
+
   if (
-    risk.tier === "High"
+    risk.tier ===
+    "High"
   ) {
     return (
       "This day has a high estimated cognitive workload. " +
@@ -611,8 +998,10 @@ function getCalendarSuggestion(risk) {
     );
   }
 
+
   if (
-    risk.tier === "Moderate"
+    risk.tier ===
+    "Moderate"
   ) {
     return (
       "Your planned workload is moderate. " +
@@ -620,14 +1009,17 @@ function getCalendarSuggestion(risk) {
     );
   }
 
+
   if (
-    risk.tier === "Light"
+    risk.tier ===
+    "Light"
   ) {
     return (
       "Your planned cognitive workload is light. " +
       "The current spacing and activity mix do not suggest substantial overload."
     );
   }
+
 
   return (
     "Your planned cognitive workload is very light."
@@ -637,12 +1029,14 @@ function getCalendarSuggestion(risk) {
 
 function getUpcomingBrainDays(
   user,
-  numberOfDays = 14
+  numberOfDays = 30
 ) {
   const days = [];
 
+
   const today =
     new Date();
+
 
   today.setHours(
     12,
@@ -650,6 +1044,7 @@ function getUpcomingBrainDays(
     0,
     0
   );
+
 
   for (
     let i = 0;
@@ -659,12 +1054,15 @@ function getUpcomingBrainDays(
     const date =
       new Date(today);
 
+
     date.setDate(
       today.getDate() + i
     );
 
+
     const key =
       localDateKey(date);
+
 
     const events =
       (
@@ -684,18 +1082,24 @@ function getUpcomingBrainDays(
             )
         );
 
+
     const risk =
       calculateCalendarRisk(
         user,
         key
       );
 
+
     days.push({
-      date: key,
+      date:
+        key,
+
       events,
+
       risk
     });
   }
+
 
   return days;
 }
