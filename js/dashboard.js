@@ -21,6 +21,11 @@ document.addEventListener(
         "homeTab"
       );
 
+    const improvementTab =
+      document.getElementById(
+        "improvementTab"
+      );
+
     const calendarTab =
       document.getElementById(
         "calendarTab"
@@ -70,11 +75,8 @@ document.addEventListener(
 
       return {
         date,
-
         log:
-          user.dailyLogs[
-            date
-          ]
+          user.dailyLogs[date]
       };
     }
 
@@ -131,6 +133,30 @@ document.addEventListener(
     }
 
 
+    function average(values) {
+      const valid =
+        values
+          .map(Number)
+          .filter(
+            value =>
+              Number.isFinite(value)
+          );
+
+      if (!valid.length) {
+        return null;
+      }
+
+      return (
+        valid.reduce(
+          (sum, value) =>
+            sum + value,
+          0
+        ) /
+        valid.length
+      );
+    }
+
+
     function metricCard(
       label,
       value,
@@ -169,61 +195,84 @@ document.addEventListener(
 
 
     function riskClass(tier) {
-      if (
-        tier === "Super High" ||
-        tier === "High"
-      ) {
-        return "risk-high";
-      }
+      const map = {
+        "Super Light":
+          "risk-super-light",
 
-      if (
-        tier === "Moderate"
-      ) {
-        return "risk-moderate";
-      }
+        "Light":
+          "risk-light",
 
-      return "risk-low";
+        "Moderate":
+          "risk-moderate",
+
+        "High":
+          "risk-high",
+
+        "Super High":
+          "risk-super-high"
+      };
+
+      return (
+        map[tier] ||
+        "risk-super-light"
+      );
     }
 
 
     /*
-      =========================
+      ==================================
       TODAY
-      =========================
+      ==================================
     */
 
     function renderHome() {
       refreshUser();
 
-      const latest =
-        getLatest();
+      const today =
+        todayKey();
 
-      if (!latest) {
+      const todayLog =
+        user.dailyLogs?.[today];
+
+      /*
+        The Today tab must represent
+        TODAY, not simply the latest
+        historical log.
+      */
+      if (!todayLog) {
         homeTab.innerHTML = `
 
           <div class="hero-card">
 
             <p class="muted">
-              NEUROVIA
+              TODAY
             </p>
 
             <h1 class="section-title">
-              What's your brain like today?
+              Ready for today's check-in?
             </h1>
 
             <p class="section-subtitle">
-              Your baseline is complete.
-              Complete your first Daily Check-In
-              to start building your daily history
-              and cognitive wellness trends.
+              Your previous data is still saved.
+              Add today's check-in to update your
+              Brain Readiness and daily signals.
             </p>
 
             <button
-              id="firstDailyBtn"
+              id="todayCheckinBtn"
               class="primary-btn"
               type="button"
             >
-              Start daily check-in
+              Update today's check-in
+            </button>
+
+            <button
+              id="previousDaysBtn"
+              class="secondary-btn"
+              type="button"
+              style="margin-top:10px;"
+            >
+              View previous days
             </button>
 
           </div>
@@ -231,7 +280,7 @@ document.addEventListener(
 
         document
           .getElementById(
-            "firstDailyBtn"
+            "todayCheckinBtn"
           )
           .onclick =
           function () {
@@ -239,27 +288,35 @@ document.addEventListener(
               "daily-update.html";
           };
 
+        document
+          .getElementById(
+            "previousDaysBtn"
+          )
+          .onclick =
+          function () {
+            window.location.href =
+              "previous-days.html";
+          };
+
         return;
       }
 
 
       const scores =
-        latest.log.scores;
+        todayLog.scores || {};
 
       const recentLogs =
         getDates()
           .slice(-7)
           .map(
             date =>
-              user.dailyLogs[
-                date
-              ]
+              user.dailyLogs[date]
           );
 
       const insight =
         buildMainInsight(
           user,
-          latest.log,
+          todayLog,
           scores,
           recentLogs
         );
@@ -291,16 +348,24 @@ document.addEventListener(
           >
             ${
               scores.brainReadiness ??
-              scores.overall
+              scores.overall ??
+              "--"
             }
           </div>
 
           <p class="section-subtitle">
             ${
-              classifyReadiness(
-                scores.brainReadiness ??
-                scores.overall
+              Number.isFinite(
+                Number(
+                  scores.brainReadiness ??
+                  scores.overall
+                )
               )
+                ? classifyReadiness(
+                    scores.brainReadiness ??
+                    scores.overall
+                  )
+                : ""
             }
           </p>
 
@@ -310,7 +375,8 @@ document.addEventListener(
               style="
                 width:${
                   scores.brainReadiness ??
-                  scores.overall
+                  scores.overall ??
+                  0
                 }%;
               "
             ></div>
@@ -342,7 +408,7 @@ document.addEventListener(
           ${metricCard(
             "Focus",
             `${
-              latest.log.focusLevel ??
+              todayLog.focusLevel ??
               "--"
             }/10`,
             "today"
@@ -371,7 +437,7 @@ document.addEventListener(
         <div class="recommendation-card">
 
           <p class="muted">
-            ONE THING TO DO
+            TODAY'S PRIORITY
           </p>
 
           <h3>
@@ -408,85 +474,21 @@ document.addEventListener(
         }
 
 
-        <div class="card">
-
-          <h2>
-            Today's inputs
-          </h2>
-
-          <div class="signal-grid">
-
-            <div>
-              <span>Sleep</span>
-              <strong>
-                ${
-                  scores.sleepHours ??
-                  "--"
-                }h
-              </strong>
-            </div>
-
-            <div>
-              <span>Sleep quality</span>
-              <strong>
-                ${
-                  latest.log.sleepQuality ??
-                  "--"
-                }/10
-              </strong>
-            </div>
-
-            <div>
-              <span>Stress</span>
-              <strong>
-                ${
-                  latest.log.stressLevel ??
-                  "--"
-                }/10
-              </strong>
-            </div>
-
-            <div>
-              <span>Energy</span>
-              <strong>
-                ${
-                  latest.log.energyLevel ??
-                  "--"
-                }/10
-              </strong>
-            </div>
-
-            <div>
-              <span>Workload</span>
-              <strong>
-                ${
-                  latest.log.workloadLevel ??
-                  "--"
-                }/10
-              </strong>
-            </div>
-
-            <div>
-              <span>Focus</span>
-              <strong>
-                ${
-                  latest.log.focusLevel ??
-                  "--"
-                }/10
-              </strong>
-            </div>
-
-          </div>
-
-        </div>
-
-
         <button
           id="dailyUpdateBtn"
           class="primary-btn"
           type="button"
         >
           Update today's check-in
+        </button>
+
+        <button
+          id="previousDaysBtn"
+          class="secondary-btn"
+          type="button"
+          style="margin-top:10px;"
+        >
+          View previous days
         </button>
       `;
 
@@ -500,13 +502,1039 @@ document.addEventListener(
           window.location.href =
             "daily-update.html";
         };
+
+
+      document
+        .getElementById(
+          "previousDaysBtn"
+        )
+        .onclick =
+        function () {
+          window.location.href =
+            "previous-days.html";
+        };
     }
 
 
     /*
-      =========================
+      ==================================
+      IMPROVEMENT
+      ==================================
+    */
+
+    function getLast30LoggedDays() {
+      return getDates()
+        .slice(-30)
+        .map(
+          date => ({
+            date,
+            log:
+              user.dailyLogs[date]
+          })
+        );
+    }
+
+
+    function getMetricValue(
+      item,
+      metric
+    ) {
+      const log =
+        item.log || {};
+
+      const scores =
+        log.scores || {};
+
+      if (
+        metric ===
+        "readiness"
+      ) {
+        return Number(
+          scores.brainReadiness ??
+          scores.overall
+        );
+      }
+
+      if (
+        metric ===
+        "recovery"
+      ) {
+        return Number(
+          scores.recovery
+        );
+      }
+
+      if (
+        metric ===
+        "cognitiveLoad"
+      ) {
+        return Number(
+          scores.cognitiveLoad
+        );
+      }
+
+      if (
+        metric ===
+        "focus"
+      ) {
+        return Number(
+          log.focusLevel
+        ) * 10;
+      }
+
+      return null;
+    }
+
+
+    function buildTrend(
+      items,
+      metric,
+      inverse = false
+    ) {
+      if (
+        items.length < 4
+      ) {
+        return {
+          direction: "learning",
+          difference: 0
+        };
+      }
+
+      const split =
+        Math.floor(
+          items.length / 2
+        );
+
+      const first =
+        items.slice(
+          0,
+          split
+        );
+
+      const second =
+        items.slice(
+          split
+        );
+
+      const firstAvg =
+        average(
+          first.map(
+            item =>
+              getMetricValue(
+                item,
+                metric
+              )
+          )
+        );
+
+      const secondAvg =
+        average(
+          second.map(
+            item =>
+              getMetricValue(
+                item,
+                metric
+              )
+          )
+        );
+
+      if (
+        firstAvg === null ||
+        secondAvg === null
+      ) {
+        return {
+          direction: "learning",
+          difference: 0
+        };
+      }
+
+      const raw =
+        secondAvg -
+        firstAvg;
+
+      const difference =
+        inverse
+          ? -raw
+          : raw;
+
+      if (difference >= 5) {
+        return {
+          direction: "improving",
+          difference:
+            Math.round(
+              Math.abs(raw)
+            )
+        };
+      }
+
+      if (difference <= -5) {
+        return {
+          direction: "declining",
+          difference:
+            Math.round(
+              Math.abs(raw)
+            )
+        };
+      }
+
+      return {
+        direction: "stable",
+        difference:
+          Math.round(
+            Math.abs(raw)
+          )
+      };
+    }
+
+
+    function getWeekdayAnalysis(
+      items
+    ) {
+      const groups = {};
+
+      items.forEach(item => {
+        const date =
+          dateFromKey(
+            item.date
+          );
+
+        if (!date) {
+          return;
+        }
+
+        const day =
+          date.toLocaleDateString(
+            "en-US",
+            {
+              weekday: "long"
+            }
+          );
+
+        if (!groups[day]) {
+          groups[day] = [];
+        }
+
+        const scores =
+          item.log.scores || {};
+
+        const load =
+          Number(
+            scores.cognitiveLoad
+          );
+
+        if (
+          Number.isFinite(load)
+        ) {
+          groups[day].push(
+            load
+          );
+        }
+      });
+
+
+      return Object
+        .entries(groups)
+        .map(
+          ([day, values]) => ({
+            day,
+            value:
+              Math.round(
+                average(values) || 0
+              ),
+            count:
+              values.length
+          })
+        )
+        .sort(
+          (a, b) =>
+            b.value - a.value
+        );
+    }
+
+
+    function buildImprovementPriority(
+      items
+    ) {
+      if (!items.length) {
+        return {
+          title:
+            "Start building your pattern",
+
+          text:
+            "Complete Daily Check-Ins so Neurovia can identify recurring areas for improvement.",
+
+          steps: [
+            "Complete today's check-in.",
+            "Keep your entries consistent.",
+            "Return after several logged days to compare patterns."
+          ]
+        };
+      }
+
+
+      const avgSleep =
+        average(
+          items.map(
+            item =>
+              Number(
+                item.log
+                  ?.scores
+                  ?.sleepHours
+              )
+          )
+        );
+
+      const avgStress =
+        average(
+          items.map(
+            item =>
+              Number(
+                item.log
+                  ?.stressLevel
+              )
+          )
+        );
+
+      const avgEnergy =
+        average(
+          items.map(
+            item =>
+              Number(
+                item.log
+                  ?.energyLevel
+              )
+          )
+        );
+
+      const avgFocus =
+        average(
+          items.map(
+            item =>
+              Number(
+                item.log
+                  ?.focusLevel
+              )
+          )
+        );
+
+      const avgLoad =
+        average(
+          items.map(
+            item =>
+              Number(
+                item.log
+                  ?.scores
+                  ?.cognitiveLoad
+              )
+          )
+        );
+
+
+      const priorities = [
+        {
+          key: "sleep",
+          score:
+            avgSleep === null
+              ? -1
+              : Math.max(
+                  0,
+                  (8 - avgSleep) *
+                  12
+                )
+        },
+
+        {
+          key: "stress",
+          score:
+            avgStress === null
+              ? -1
+              : avgStress * 8
+        },
+
+        {
+          key: "energy",
+          score:
+            avgEnergy === null
+              ? -1
+              : (10 - avgEnergy) * 8
+        },
+
+        {
+          key: "focus",
+          score:
+            avgFocus === null
+              ? -1
+              : (10 - avgFocus) * 8
+        },
+
+        {
+          key: "load",
+          score:
+            avgLoad === null
+              ? -1
+              : avgLoad
+        }
+      ]
+        .sort(
+          (a, b) =>
+            b.score - a.score
+        );
+
+
+      const main =
+        priorities[0]?.key;
+
+
+      if (main === "sleep") {
+        return {
+          title:
+            "Protect a more consistent sleep window",
+
+          text:
+            "Short or inconsistent sleep is one of the strongest recurring signals in your recent data. The goal is not simply to 'sleep more' tonight, but to make enough sleep easier to repeat.",
+
+          steps: [
+            "Choose a realistic target bedtime and keep it within roughly the same window across the week.",
+            "Move optional work and stimulating screen use away from the final part of your evening.",
+            "Prepare tomorrow's essentials earlier so bedtime is not delayed by small unfinished tasks.",
+            "Use a short wind-down routine that you can repeat instead of relying on motivation at the end of the day."
+          ]
+        };
+      }
+
+
+      if (main === "stress") {
+        return {
+          title:
+            "Reduce repeated stress accumulation",
+
+          text:
+            "Stress is recurring strongly across your recent check-ins. Focus on changing how demands are distributed instead of waiting until the end of a difficult day to recover.",
+
+          steps: [
+            "Identify the one or two tasks that actually need your highest attention each day.",
+            "Avoid stacking multiple high-demand activities without a real break.",
+            "Use the Brain Calendar to move flexible work away from already demanding periods.",
+            "Protect a lower-stimulation transition before sleep on high-stress days."
+          ]
+        };
+      }
+
+
+      if (main === "energy") {
+        return {
+          title:
+            "Build more recovery into demanding days",
+
+          text:
+            "Low energy is recurring in your recent pattern. Instead of treating recovery as something that happens only after all work is finished, place recovery periods inside demanding days.",
+
+          steps: [
+            "Leave a real gap between longer demanding activities.",
+            "Keep physical activity in the schedule when it usually helps you recover.",
+            "Avoid filling every break with another task.",
+            "Protect your sleep opportunity when several low-energy days occur together."
+          ]
+        };
+      }
+
+
+      if (main === "focus") {
+        return {
+          title:
+            "Protect your attention from repeated switching",
+
+          text:
+            "Focus is one of the weaker recurring signals in your recent data. The most useful change is to make focused work easier to sustain, not simply to try harder.",
+
+          steps: [
+            "Choose one defined task before beginning a work block.",
+            "Remove avoidable notifications and task switching during that block.",
+            "Separate demanding blocks with a real break.",
+            "Place your most important focused work at times when your energy is usually stronger."
+          ]
+        };
+      }
+
+
+      return {
+        title:
+          "Spread cognitive demand more evenly",
+
+        text:
+          "Cognitive Load is the strongest recurring strain signal in your recent data. The Brain Calendar can help you avoid concentrating too much demanding work into the same period.",
+
+        steps: [
+          "Move flexible assignments away from exam-heavy periods when possible.",
+          "Leave longer gaps between high-demand activities.",
+          "Start larger study tasks earlier instead of compressing them into one day.",
+          "Use lighter activities between demanding work blocks."
+        ]
+      };
+    }
+
+
+    function buildChartSVG(
+      items
+    ) {
+      if (
+        items.length < 2
+      ) {
+        return `
+          <div class="chart-empty">
+            Add at least two Daily Check-Ins
+            to start the 30-day graph.
+          </div>
+        `;
+      }
+
+
+      const metrics = [
+        {
+          key: "readiness",
+          label: "Readiness",
+          className: "chart-readiness"
+        },
+        {
+          key: "recovery",
+          label: "Recovery",
+          className: "chart-recovery"
+        },
+        {
+          key: "cognitiveLoad",
+          label: "Cognitive Load",
+          className: "chart-load"
+        },
+        {
+          key: "focus",
+          label: "Focus",
+          className: "chart-focus"
+        }
+      ];
+
+
+      const width = 900;
+      const height = 330;
+      const left = 42;
+      const right = 18;
+      const top = 20;
+      const bottom = 40;
+
+      const usableWidth =
+        width -
+        left -
+        right;
+
+      const usableHeight =
+        height -
+        top -
+        bottom;
+
+
+      function x(index) {
+        if (
+          items.length === 1
+        ) {
+          return left;
+        }
+
+        return (
+          left +
+          (
+            index /
+            (items.length - 1)
+          ) *
+          usableWidth
+        );
+      }
+
+
+      function y(value) {
+        return (
+          top +
+          (
+            1 -
+            Math.max(
+              0,
+              Math.min(
+                100,
+                value
+              )
+            ) /
+            100
+          ) *
+          usableHeight
+        );
+      }
+
+
+      const gridLines =
+        [0, 25, 50, 75, 100]
+          .map(value => `
+            <line
+              x1="${left}"
+              x2="${width - right}"
+              y1="${y(value)}"
+              y2="${y(value)}"
+              class="chart-grid-line"
+            ></line>
+
+            <text
+              x="4"
+              y="${y(value) + 4}"
+              class="chart-axis-text"
+            >
+              ${value}
+            </text>
+          `)
+          .join("");
+
+
+      const lines =
+        metrics
+          .map(metric => {
+
+            const points =
+              items
+                .map(
+                  (item, index) => {
+                    const value =
+                      getMetricValue(
+                        item,
+                        metric.key
+                      );
+
+                    if (
+                      !Number.isFinite(
+                        value
+                      )
+                    ) {
+                      return null;
+                    }
+
+                    return (
+                      `${x(index)},${y(value)}`
+                    );
+                  }
+                )
+                .filter(Boolean)
+                .join(" ");
+
+            if (!points) {
+              return "";
+            }
+
+            return `
+              <polyline
+                points="${points}"
+                class="trend-line ${metric.className}"
+              ></polyline>
+            `;
+          })
+          .join("");
+
+
+      const firstDate =
+        formatDateKey(
+          items[0].date
+        );
+
+      const lastDate =
+        formatDateKey(
+          items[
+            items.length - 1
+          ].date
+        );
+
+
+      return `
+        <div class="trend-chart-scroll">
+
+          <svg
+            class="trend-chart"
+            viewBox="0 0 ${width} ${height}"
+            role="img"
+            aria-label="30 day Neurovia trend chart"
+          >
+
+            ${gridLines}
+            ${lines}
+
+            <text
+              x="${left}"
+              y="${height - 8}"
+              class="chart-axis-text"
+            >
+              ${firstDate}
+            </text>
+
+            <text
+              x="${width - right}"
+              y="${height - 8}"
+              text-anchor="end"
+              class="chart-axis-text"
+            >
+              ${lastDate}
+            </text>
+
+          </svg>
+
+        </div>
+
+
+        <div class="chart-legend">
+
+          <span class="legend-readiness">
+            Readiness
+          </span>
+
+          <span class="legend-recovery">
+            Recovery
+          </span>
+
+          <span class="legend-load">
+            Cognitive Load
+          </span>
+
+          <span class="legend-focus">
+            Focus
+          </span>
+
+        </div>
+      `;
+    }
+
+
+    function renderImprovement() {
+      refreshUser();
+
+      const items =
+        getLast30LoggedDays();
+
+      const priority =
+        buildImprovementPriority(
+          items
+        );
+
+      const weekday =
+        getWeekdayAnalysis(
+          items
+        );
+
+      const hardestDay =
+        weekday[0];
+
+      const readinessTrend =
+        buildTrend(
+          items,
+          "readiness"
+        );
+
+      const recoveryTrend =
+        buildTrend(
+          items,
+          "recovery"
+        );
+
+      const loadTrend =
+        buildTrend(
+          items,
+          "cognitiveLoad",
+          true
+        );
+
+      const focusTrend =
+        buildTrend(
+          items,
+          "focus"
+        );
+
+      const personalRecovery =
+        buildPersonalRecoverySuggestion(
+          user
+        );
+
+      const topStress =
+        getTopStressTags(
+          user,
+          30,
+          3
+        );
+
+
+      improvementTab.innerHTML = `
+
+        <div class="hero-card">
+
+          <p class="muted">
+            IMPROVEMENT
+          </p>
+
+          <h1 class="section-title">
+            Turn patterns into changes.
+          </h1>
+
+          <p class="section-subtitle">
+            This view uses up to 30 logged days
+            to compare Brain Readiness, Recovery,
+            Cognitive Load and Focus. It looks for
+            recurring strain, whether your signals
+            are improving, and which weekdays tend
+            to carry more cognitive demand.
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <p class="muted">
+            30-DAY OVERVIEW
+          </p>
+
+          <h2>
+            Your four main signals
+          </h2>
+
+          <p class="section-subtitle">
+            Each line uses the same 0–100 visual scale.
+            Focus is converted from your 1–10 answer to
+            0–100 only for comparison on this chart.
+            Higher Readiness, Recovery and Focus are
+            generally favorable signals; higher Cognitive
+            Load means greater estimated mental demand.
+          </p>
+
+          ${buildChartSVG(items)}
+
+        </div>
+
+
+        <div class="row two improvement-metrics">
+
+          ${metricCard(
+            "Readiness",
+            readinessTrend.direction,
+            "recent trend"
+          )}
+
+          ${metricCard(
+            "Recovery",
+            recoveryTrend.direction,
+            "recent trend"
+          )}
+
+          ${metricCard(
+            "Cognitive Load",
+            loadTrend.direction,
+            "lower is better"
+          )}
+
+          ${metricCard(
+            "Focus",
+            focusTrend.direction,
+            "recent trend"
+          )}
+
+        </div>
+
+
+        <div class="recommendation-card">
+
+          <p class="muted">
+            MAIN IMPROVEMENT AREA
+          </p>
+
+          <h2>
+            ${priority.title}
+          </h2>
+
+          <p>
+            ${priority.text}
+          </p>
+
+          <div class="improvement-steps">
+
+            ${
+              priority.steps
+                .map(
+                  step => `
+                    <div class="improvement-step">
+                      <i class="mdi mdi-check-circle-outline"></i>
+                      <span>${step}</span>
+                    </div>
+                  `
+                )
+                .join("")
+            }
+
+          </div>
+
+        </div>
+
+
+        ${
+          hardestDay
+            ? `
+              <div class="card">
+
+                <p class="muted">
+                  WEEKDAY PATTERN
+                </p>
+
+                <h2>
+                  ${hardestDay.day} currently carries
+                  the highest average cognitive load.
+                </h2>
+
+                <p>
+                  Across your available 30-day data,
+                  ${hardestDay.day} has an average
+                  Cognitive Load of
+                  ${hardestDay.value}/100
+                  from ${hardestDay.count}
+                  logged occurrence(s).
+                </p>
+
+                <p class="section-subtitle">
+                  Neurovia uses this pattern together
+                  with your Brain Calendar so you can
+                  avoid adding unnecessary demanding
+                  events to days that are repeatedly
+                  difficult.
+                </p>
+
+                <div class="weekday-bars">
+
+                  ${
+                    weekday
+                      .map(
+                        day => `
+                          <div class="weekday-row">
+
+                            <span>
+                              ${day.day.slice(0, 3)}
+                            </span>
+
+                            <div class="weekday-bar-bg">
+                              <div
+                                class="weekday-bar-fill"
+                                style="
+                                  width:${day.value}%;
+                                "
+                              ></div>
+                            </div>
+
+                            <strong>
+                              ${day.value}
+                            </strong>
+
+                          </div>
+                        `
+                      )
+                      .join("")
+                  }
+
+                </div>
+
+              </div>
+            `
+            : ""
+        }
+
+
+        ${
+          topStress.length
+            ? `
+              <div class="card">
+
+                <p class="muted">
+                  RECURRING STRAIN
+                </p>
+
+                <h2>
+                  What has been making days harder
+                </h2>
+
+                <div class="journal-tag-row">
+
+                  ${
+                    topStress
+                      .map(
+                        item => `
+                          <span>
+                            ${item.tag}
+                            ·
+                            ${item.count}
+                          </span>
+                        `
+                      )
+                      .join("")
+                  }
+
+                </div>
+
+              </div>
+            `
+            : ""
+        }
+
+
+        ${
+          personalRecovery
+            ? `
+              <div class="card personal-recovery-card">
+
+                <p class="muted">
+                  YOUR RECOVERY PATTERN
+                </p>
+
+                <h2>
+                  ${personalRecovery.tag}
+                </h2>
+
+                <p>
+                  You have selected this recovery
+                  tag ${personalRecovery.occurrences}
+                  time(s) recently.
+                </p>
+
+                <div class="recovery-action">
+                  ${personalRecovery.text}
+                </div>
+
+              </div>
+            `
+            : `
+              <div class="card">
+
+                <p class="muted">
+                  PERSONAL RECOVERY
+                </p>
+
+                <h2>
+                  Tell Neurovia what actually helps.
+                </h2>
+
+                <p>
+                  Use the Journal recovery tags after
+                  your days. Once a recovery strategy
+                  repeats, Neurovia can suggest it again
+                  during more demanding periods.
+                </p>
+
+              </div>
+            `
+        }
+
+      `;
+    }
+
+
+    /*
+      ==================================
       BRAIN CALENDAR
-      =========================
+      ==================================
     */
 
     function renderCalendar() {
@@ -516,6 +1544,11 @@ document.addEventListener(
         getUpcomingBrainDays(
           user,
           14
+        );
+
+      const personalRecovery =
+        buildPersonalRecoverySuggestion(
+          user
         );
 
 
@@ -532,10 +1565,11 @@ document.addEventListener(
           </h1>
 
           <p class="section-subtitle">
-            Neurovia estimates your planned cognitive
-            workload using event duration, mental demand,
-            schedule concentration and your recent
-            Brain Readiness.
+            Neurovia combines activity type,
+            mental demand, duration, spacing
+            between activities and recent
+            Brain Readiness to estimate planned
+            cognitive workload.
           </p>
 
         </div>
@@ -558,9 +1592,7 @@ document.addEventListener(
 
               <div class="input-box">
 
-                <i
-                  class="mdi mdi-pencil-outline"
-                ></i>
+                <i class="mdi mdi-pencil-outline"></i>
 
                 <input
                   id="eventTitle"
@@ -582,9 +1614,7 @@ document.addEventListener(
 
               <div class="input-box">
 
-                <i
-                  class="mdi mdi-calendar"
-                ></i>
+                <i class="mdi mdi-calendar"></i>
 
                 <input
                   id="eventDate"
@@ -608,9 +1638,7 @@ document.addEventListener(
 
                 <div class="input-box">
 
-                  <i
-                    class="mdi mdi-clock-outline"
-                  ></i>
+                  <i class="mdi mdi-clock-outline"></i>
 
                   <input
                     id="eventStartTime"
@@ -631,9 +1659,7 @@ document.addEventListener(
 
                 <div class="input-box">
 
-                  <i
-                    class="mdi mdi-clock-outline"
-                  ></i>
+                  <i class="mdi mdi-clock-outline"></i>
 
                   <input
                     id="eventEndTime"
@@ -651,36 +1677,46 @@ document.addEventListener(
             <div class="input-row">
 
               <label>
-                Type
+                Activity type
               </label>
 
               <div class="input-box">
 
                 <select id="eventType">
 
-                  <option>
+                  <option value="Physical Activity">
+                    Physical Activity
+                  </option>
+
+                  <option value="Assignment / Task">
+                    Assignment / Task
+                  </option>
+
+                  <option
+                    value="Studies"
+                    selected
+                  >
+                    Studies
+                  </option>
+
+                  <option value="Exam">
                     Exam
                   </option>
 
-                  <option>
-                    Assignment
-                  </option>
-
-                  <option>
-                    Presentation
-                  </option>
-
-                  <option>
-                    Activity
-                  </option>
-
-                  <option>
+                  <option value="Other">
                     Other
                   </option>
 
                 </select>
 
               </div>
+
+              <p class="field-help">
+                Activity type changes the estimated
+                cognitive cost. Physical activity has
+                the lowest cognitive-load weight;
+                exams have the highest.
+              </p>
 
             </div>
 
@@ -746,6 +1782,39 @@ document.addEventListener(
         <div class="card">
 
           <h2>
+            Overload scale
+          </h2>
+
+          <div class="overload-legend">
+
+            <span class="legend-super-light">
+              Super Light
+            </span>
+
+            <span class="legend-light">
+              Light
+            </span>
+
+            <span class="legend-moderate">
+              Moderate
+            </span>
+
+            <span class="legend-high">
+              High
+            </span>
+
+            <span class="legend-super-high">
+              Super High
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <h2>
             Next 14 days
           </h2>
 
@@ -777,6 +1846,12 @@ document.addEventListener(
                           }
                         );
 
+                    const overloaded =
+                      day.risk.tier ===
+                        "High" ||
+                      day.risk.tier ===
+                        "Super High";
+
                     return `
 
                       <div
@@ -793,6 +1868,7 @@ document.addEventListener(
                         >
 
                           <div>
+
                             <strong>
                               ${label}
                             </strong>
@@ -807,6 +1883,7 @@ document.addEventListener(
                               Estimated load:
                               ${day.risk.load}
                             </div>
+
                           </div>
 
 
@@ -836,9 +1913,7 @@ document.addEventListener(
                                           ${event.title}
                                         </strong>
 
-                                        <div
-                                          class="muted"
-                                        >
+                                        <div class="muted">
                                           ${event.type}
                                           ·
                                           ${getIntensityLabel(
@@ -901,16 +1976,30 @@ document.addEventListener(
 
                         ${
                           day.events.length
+                            ? `
+                              <div class="calendar-warning">
+                                ${getCalendarSuggestion(
+                                  day.risk
+                                )}
+                              </div>
+                            `
+                            : ""
+                        }
+
+
+                        ${
+                          overloaded &&
+                          personalRecovery
 
                             ? `
-                              <div
-                                class="calendar-warning"
-                              >
-                                ${
-                                  getCalendarSuggestion(
-                                    day.risk
-                                  )
-                                }
+                              <div class="calendar-recovery">
+
+                                <strong>
+                                  Personal recovery idea:
+                                </strong>
+
+                                ${personalRecovery.text}
+
                               </div>
                             `
 
@@ -937,6 +2026,7 @@ document.addEventListener(
         .addEventListener(
           "submit",
           function (event) {
+
             event.preventDefault();
 
             const message =
@@ -966,8 +2056,12 @@ document.addEventListener(
 
 
             if (
-              timeToMinutes(endTime) <=
-              timeToMinutes(startTime)
+              timeToMinutes(
+                endTime
+              ) <=
+              timeToMinutes(
+                startTime
+              )
             ) {
               message.textContent =
                 "End time must be later than start time.";
@@ -1014,11 +2108,13 @@ document.addEventListener(
                     .value,
 
                 intensity:
-                  document
-                    .getElementById(
-                      "eventIntensity"
-                    )
-                    .value
+                  Number(
+                    document
+                      .getElementById(
+                        "eventIntensity"
+                      )
+                      .value
+                  )
               }
             );
 
@@ -1059,9 +2155,9 @@ document.addEventListener(
 
 
     /*
-      =========================
+      ==================================
       BRAIN JOURNAL
-      =========================
+      ==================================
     */
 
     function renderJournal() {
@@ -1079,7 +2175,9 @@ document.addEventListener(
           );
 
       const patterns =
-        buildJournalPatterns(user);
+        buildJournalPatterns(
+          user
+        );
 
 
       journalTab.innerHTML = `
@@ -1091,12 +2189,15 @@ document.addEventListener(
           </p>
 
           <h1 class="section-title">
-            Notice what changes your brain.
+            Track what drains and restores you.
           </h1>
 
           <p class="section-subtitle">
-            Keep it short. Log what drained your
-            energy and what helped you focus.
+            No free-text interpretation is needed.
+            Select the tags that best describe what
+            made the day harder and what helped you
+            recover. Repeated recovery tags can later
+            be suggested on overloaded days.
           </p>
 
         </div>
@@ -1105,90 +2206,119 @@ document.addEventListener(
         <div class="card">
 
           <h2>
-            Today's note
+            Today's pattern
           </h2>
 
           <form id="journalForm">
 
 
-            <div class="input-row">
+            <div class="journal-group stress-group">
 
-              <label>
-                What drained your energy?
-              </label>
+              <p class="journal-group-title">
+                What made today harder?
+              </p>
 
-              <div class="input-box">
+              <p class="muted">
+                Select every strain that applies.
+              </p>
 
-                <textarea
-                  id="journalDrained"
-                  rows="3"
-                  placeholder="A long study session, poor sleep..."
-                ></textarea>
+              <div class="journal-tags">
 
-              </div>
+                ${
+                  STRESS_TAGS
+                    .map(
+                      tag => `
 
-            </div>
-
-
-            <div class="input-row">
-
-              <label>
-                What helped you focus?
-              </label>
-
-              <div class="input-box">
-
-                <textarea
-                  id="journalHelped"
-                  rows="3"
-                  placeholder="Quiet room, exercise, good sleep..."
-                ></textarea>
-
-              </div>
-
-            </div>
-
-
-            <p class="muted">
-              Tags
-            </p>
-
-
-            <div class="journal-tags">
-
-              ${
-                JOURNAL_TAGS
-                  .map(
-                    tag => `
-
-                      <label
-                        class="journal-tag"
-                      >
-
-                        <input
-                          type="checkbox"
-                          value="${tag}"
+                        <label
+                          class="
+                            journal-tag
+                            stress-tag
+                          "
                         >
 
-                        <span>
-                          ${tag}
-                        </span>
+                          <input
+                            type="checkbox"
+                            name="stressTag"
+                            value="${tag}"
+                          >
 
-                      </label>
-                    `
-                  )
-                  .join("")
-              }
+                          <span>
+                            ${tag}
+                          </span>
+
+                        </label>
+                      `
+                    )
+                    .join("")
+                }
+
+              </div>
 
             </div>
+
+
+            <div
+              class="
+                journal-group
+                recovery-group
+              "
+            >
+
+              <p class="journal-group-title">
+                What helped you recover?
+              </p>
+
+              <p class="muted">
+                Choose what actually made you feel
+                calmer, more recovered or more focused.
+              </p>
+
+              <div class="journal-tags">
+
+                ${
+                  RECOVERY_TAGS
+                    .map(
+                      tag => `
+
+                        <label
+                          class="
+                            journal-tag
+                            recovery-tag
+                          "
+                        >
+
+                          <input
+                            type="checkbox"
+                            name="recoveryTag"
+                            value="${tag}"
+                          >
+
+                          <span>
+                            ${tag}
+                          </span>
+
+                        </label>
+                      `
+                    )
+                    .join("")
+                }
+
+              </div>
+
+            </div>
+
+
+            <p
+              id="journalMessage"
+              class="message-text"
+            ></p>
 
 
             <button
               class="primary-btn"
               type="submit"
-              style="margin-top:16px;"
             >
-              Save journal entry
+              Save today's tags
             </button>
 
           </form>
@@ -1242,85 +2372,114 @@ document.addEventListener(
             entries.length
 
               ? entries
-                  .slice(0, 10)
+                  .slice(
+                    0,
+                    15
+                  )
                   .map(
-                    entry => `
+                    entry => {
 
-                      <div class="journal-entry">
+                      const stressTags =
+                        getEntryStressTags(
+                          entry
+                        );
 
-                        <div
-                          class="journal-entry-top"
-                        >
+                      const recoveryTags =
+                        getEntryRecoveryTags(
+                          entry
+                        );
 
-                          <strong>
-                            ${
-                              formatDateKey(
-                                entry.date
-                              )
-                            }
-                          </strong>
+                      return `
 
-                          <button
-                            class="delete-journal-btn"
-                            data-id="${entry.id}"
-                            type="button"
+                        <div class="journal-entry">
+
+                          <div
+                            class="journal-entry-top"
                           >
-                            ×
-                          </button>
 
-                        </div>
+                            <strong>
+                              ${formatDateKey(
+                                entry.date
+                              )}
+                            </strong>
 
+                            <button
+                              class="delete-journal-btn"
+                              data-id="${entry.id}"
+                              type="button"
+                            >
+                              ×
+                            </button>
 
-                        ${
-                          entry.drained
-                            ? `
-                              <p>
-                                <strong>
-                                  Drained:
-                                </strong>
+                          </div>
 
-                                ${entry.drained}
-                              </p>
-                            `
-                            : ""
-                        }
-
-
-                        ${
-                          entry.helped
-                            ? `
-                              <p>
-                                <strong>
-                                  Helped:
-                                </strong>
-
-                                ${entry.helped}
-                              </p>
-                            `
-                            : ""
-                        }
-
-
-                        <div class="journal-tag-row">
 
                           ${
-                            (
-                              entry.tags || []
-                            )
-                              .map(
-                                tag => `
-                                  <span>
-                                    ${tag}
-                                  </span>
-                                `
-                              )
-                              .join("")
+                            stressTags.length
+                              ? `
+                                <p class="journal-entry-label">
+                                  Strain
+                                </p>
+
+                                <div
+                                  class="
+                                    journal-tag-row
+                                    stress-tag-row
+                                  "
+                                >
+
+                                  ${
+                                    stressTags
+                                      .map(
+                                        tag => `
+                                          <span>
+                                            ${tag}
+                                          </span>
+                                        `
+                                      )
+                                      .join("")
+                                  }
+
+                                </div>
+                              `
+                              : ""
+                          }
+
+
+                          ${
+                            recoveryTags.length
+                              ? `
+                                <p class="journal-entry-label">
+                                  Recovery
+                                </p>
+
+                                <div
+                                  class="
+                                    journal-tag-row
+                                    recovery-tag-row
+                                  "
+                                >
+
+                                  ${
+                                    recoveryTags
+                                      .map(
+                                        tag => `
+                                          <span>
+                                            ${tag}
+                                          </span>
+                                        `
+                                      )
+                                      .join("")
+                                  }
+
+                                </div>
+                              `
+                              : ""
                           }
 
                         </div>
-
-                      </div>
-                    `
+                      `;
+                    }
                   )
                   .join("")
 
@@ -1345,14 +2504,11 @@ document.addEventListener(
 
             event.preventDefault();
 
-            const updated =
-              getCurrentUserObject();
-
-            const tags =
+            const stressTags =
               Array.from(
                 document
                   .querySelectorAll(
-                    ".journal-tag input:checked"
+                    'input[name="stressTag"]:checked'
                   )
               )
                 .map(
@@ -1361,26 +2517,71 @@ document.addEventListener(
                 );
 
 
+            const recoveryTags =
+              Array.from(
+                document
+                  .querySelectorAll(
+                    'input[name="recoveryTag"]:checked'
+                  )
+              )
+                .map(
+                  input =>
+                    input.value
+                );
+
+
+            const message =
+              document.getElementById(
+                "journalMessage"
+              );
+
+
+            if (
+              !stressTags.length &&
+              !recoveryTags.length
+            ) {
+              message.textContent =
+                "Select at least one tag before saving.";
+
+              message.classList.add(
+                "error"
+              );
+
+              return;
+            }
+
+
+            const updated =
+              getCurrentUserObject();
+
+
+            /*
+              Keep one tag entry per day.
+              Saving again replaces today's
+              previous journal tags.
+            */
+            ensureBrainJournal(
+              updated
+            );
+
+            updated.brainJournal =
+              updated.brainJournal
+                .filter(
+                  entry =>
+                    entry.date !==
+                    todayKey()
+                );
+
+
             addJournalEntry(
               updated,
               {
-                drained:
-                  document
-                    .getElementById(
-                      "journalDrained"
-                    )
-                    .value
-                    .trim(),
+                date:
+                  todayKey(),
 
-                helped:
-                  document
-                    .getElementById(
-                      "journalHelped"
-                    )
-                    .value
-                    .trim(),
+                stressTags,
 
-                tags
+                recoveryTags
               }
             );
 
@@ -1421,16 +2622,13 @@ document.addEventListener(
 
 
     /*
-      =========================
+      ==================================
       PROFILE
-      =========================
+      ==================================
     */
 
     function renderProfile() {
       refreshUser();
-
-      const latest =
-        getLatest();
 
       const baselineCount =
         user.baselineHistory
@@ -1466,17 +2664,9 @@ document.addEventListener(
 
         <div class="card">
 
-          <div
-            style="
-              display:flex;
-              align-items:center;
-              justify-content:space-between;
-              gap:12px;
-              margin-bottom:14px;
-            "
-          >
+          <div class="profile-title-row">
 
-            <h2 style="margin:0;">
+            <h2>
               Fixed profile
             </h2>
 
@@ -1683,12 +2873,10 @@ document.addEventListener(
           </h2>
 
           <p class="section-subtitle">
-
             Your baseline is separate from your
             Daily Check-Ins. Retaking it creates
             a new baseline record without deleting
             your previous baseline history.
-
           </p>
 
 
@@ -1757,6 +2945,16 @@ document.addEventListener(
               ${getDates().length}
             </div>
 
+            <div class="info-row">
+              <strong>
+                Journal entries:
+              </strong>
+
+              ${
+                user.brainJournal
+                  ?.length || 0
+              }
+            </div>
 
             <div class="info-row">
               <strong>
@@ -1769,165 +2967,109 @@ document.addEventListener(
               }
             </div>
 
-
-            <div class="info-row">
-              <strong>
-                Journal entries:
-              </strong>
-
-              ${
-                user.brainJournal
-                  ?.length || 0
-              }
-            </div>
-
-
-            <div class="info-row">
-              <strong>
-                Weekly check-ins:
-              </strong>
-
-              ${
-                user.weeklyCheckins
-                  ?.length || 0
-              }
-            </div>
-
-
-            ${
-              latest
-                ? `
-                  <div class="info-row">
-
-                    <strong>
-                      Latest Daily Check-In:
-                    </strong>
-
-                    ${
-                      formatDateKey(
-                        latest.date
-                      )
-                    }
-
-                  </div>
-                `
-                : ""
-            }
-
           </div>
 
-        </div>
 
+          <div class="profile-actions">
 
-        <div class="profile-actions">
+            <button
+              id="profilePreviousBtn"
+              class="secondary-btn"
+              type="button"
+            >
+              View previous days
+            </button>
 
-          <button
-            id="profileDailyBtn"
-            class="primary-btn"
-            type="button"
-          >
-            Daily check-in
-          </button>
+            <button
+              id="weeklyCheckinBtn"
+              class="secondary-btn"
+              type="button"
+            >
+              Weekly Check-In
+            </button>
 
+            <button
+              id="logoutBtn"
+              class="ghost-btn"
+              type="button"
+            >
+              Log out
+            </button>
 
-          <button
-            id="weeklyCheckinBtn"
-            class="secondary-btn"
-            type="button"
-          >
-            Weekly check-in
-          </button>
-
-
-          <button
-            id="profilePreviousBtn"
-            class="secondary-btn"
-            type="button"
-          >
-            Edit previous days
-          </button>
-
-
-          <button
-            id="logoutBtn"
-            class="ghost-btn"
-            type="button"
-          >
-            Log out
-          </button>
+          </div>
 
         </div>
       `;
 
 
-      const editProfileBtn =
-        document.getElementById(
-          "editProfileBtn"
-        );
-
-      const saveProfileBtn =
-        document.getElementById(
-          "saveProfileBtn"
-        );
-
-
-      const profileFields = [
+      const fixedInputs = [
         {
-          input: "profileAge",
-          box: "ageBox"
+          input:
+            "profileAge",
+          box:
+            "ageBox"
         },
         {
-          input: "profileSex",
-          box: "sexBox"
+          input:
+            "profileSex",
+          box:
+            "sexBox"
         },
         {
-          input: "profileCountry",
-          box: "countryBox"
+          input:
+            "profileCountry",
+          box:
+            "countryBox"
         },
         {
-          input: "profileWeight",
-          box: "weightBox"
+          input:
+            "profileWeight",
+          box:
+            "weightBox"
         },
         {
-          input: "profileHeight",
-          box: "heightBox"
+          input:
+            "profileHeight",
+          box:
+            "heightBox"
         }
       ];
 
 
-      editProfileBtn.onclick =
+      document
+        .getElementById(
+          "editProfileBtn"
+        )
+        .onclick =
         function () {
 
-          profileFields.forEach(
-            field => {
+          fixedInputs
+            .forEach(
+              item => {
 
-              document
-                .getElementById(
-                  field.input
-                )
-                .disabled =
-                false;
+                document
+                  .getElementById(
+                    item.input
+                  )
+                  .disabled =
+                  false;
 
-              document
-                .getElementById(
-                  field.box
-                )
-                .classList
-                .remove(
-                  "locked-field"
-                );
-
-            }
-          );
-
-
-          editProfileBtn
-            .classList
-            .add(
-              "hidden-btn"
+                document
+                  .getElementById(
+                    item.box
+                  )
+                  .classList
+                  .remove(
+                    "locked-field"
+                  );
+              }
             );
 
-          saveProfileBtn
+
+          document
+            .getElementById(
+              "saveProfileBtn"
+            )
             .classList
             .remove(
               "hidden-btn"
@@ -1935,25 +3077,39 @@ document.addEventListener(
         };
 
 
-      saveProfileBtn.onclick =
+      document
+        .getElementById(
+          "saveProfileBtn"
+        )
+        .onclick =
         function () {
 
-          const age =
-            document
-              .getElementById(
-                "profileAge"
-              )
-              .value
-              .trim();
+          const updated =
+            getCurrentUserObject();
 
-          const sex =
+          updated.profile =
+            updated.profile || {};
+
+
+          updated.profile.age =
+            Number(
+              document
+                .getElementById(
+                  "profileAge"
+                )
+                .value
+            );
+
+
+          updated.profile.sex =
             document
               .getElementById(
                 "profileSex"
               )
               .value;
 
-          const country =
+
+          updated.profile.country =
             document
               .getElementById(
                 "profileCountry"
@@ -1961,117 +3117,55 @@ document.addEventListener(
               .value
               .trim();
 
-          const weight =
-            document
-              .getElementById(
-                "profileWeight"
-              )
-              .value
-              .trim();
 
-          const height =
-            document
-              .getElementById(
-                "profileHeight"
-              )
-              .value
-              .trim();
-
-          const message =
-            document
-              .getElementById(
-                "profileEditMessage"
-              );
-
-
-          if (
-            !age ||
-            !sex ||
-            !country ||
-            !weight ||
-            !height
-          ) {
-            message.textContent =
-              "Please complete all fixed profile fields.";
-
-            message.classList.add(
-              "error"
+          updated.profile.weight =
+            Number(
+              document
+                .getElementById(
+                  "profileWeight"
+                )
+                .value
             );
 
-            return;
+
+          updated.profile.height =
+            Number(
+              document
+                .getElementById(
+                  "profileHeight"
+                )
+                .value
+            );
+
+
+          /*
+            Keep baseline answers aligned
+            with the fixed profile when
+            these fields already exist.
+          */
+          if (
+            updated.onboardingAnswers
+          ) {
+            updated.onboardingAnswers.age =
+              updated.profile.age;
+
+            updated.onboardingAnswers.sex =
+              updated.profile.sex;
+
+            updated.onboardingAnswers.country =
+              updated.profile.country;
+
+            updated.onboardingAnswers.weight =
+              updated.profile.weight;
+
+            updated.onboardingAnswers.height =
+              updated.profile.height;
           }
 
 
-          const updated =
-            getCurrentUserObject();
-
-
-          updated.profile = {
-            ...updated.profile,
-            age,
-            sex,
-            country,
-            weight,
-            height
-          };
-
-
-          updated.onboardingAnswers =
-            updated.onboardingAnswers ||
-            {};
-
-
-          updated.onboardingAnswers.age =
-            age;
-
-          updated.onboardingAnswers.sex =
-            sex;
-
-          updated.onboardingAnswers.country =
-            country;
-
-          updated.onboardingAnswers.weight =
-            weight;
-
-          updated.onboardingAnswers.height =
-            height;
-
-
           updateUser(updated);
+
           renderProfile();
-        };
-
-
-      document
-        .getElementById(
-          "profileDailyBtn"
-        )
-        .onclick =
-        function () {
-          window.location.href =
-            "daily-update.html";
-        };
-
-
-      document
-        .getElementById(
-          "weeklyCheckinBtn"
-        )
-        .onclick =
-        function () {
-          window.location.href =
-            "weekly-checkin.html";
-        };
-
-
-      document
-        .getElementById(
-          "profilePreviousBtn"
-        )
-        .onclick =
-        function () {
-          window.location.href =
-            "previous-days.html";
         };
 
 
@@ -2094,6 +3188,28 @@ document.addEventListener(
 
       document
         .getElementById(
+          "profilePreviousBtn"
+        )
+        .onclick =
+        function () {
+          window.location.href =
+            "previous-days.html";
+        };
+
+
+      document
+        .getElementById(
+          "weeklyCheckinBtn"
+        )
+        .onclick =
+        function () {
+          window.location.href =
+            "weekly-checkin.html";
+        };
+
+
+      document
+        .getElementById(
           "logoutBtn"
         )
         .onclick =
@@ -2108,27 +3224,115 @@ document.addEventListener(
 
 
     /*
-      =========================
-      RENDER APP
-      =========================
+      ==================================
+      NAVIGATION
+      ==================================
     */
 
-    function renderEverything() {
-      renderHome();
-      renderCalendar();
-      renderJournal();
-      renderProfile();
+    const tabMap = {
+      home:
+        homeTab,
+
+      improvement:
+        improvementTab,
+
+      calendar:
+        calendarTab,
+
+      journal:
+        journalTab,
+
+      profile:
+        profileTab
+    };
+
+
+    function renderTab(tab) {
+      if (tab === "home") {
+        renderHome();
+      }
+
+      if (
+        tab ===
+        "improvement"
+      ) {
+        renderImprovement();
+      }
+
+      if (
+        tab ===
+        "calendar"
+      ) {
+        renderCalendar();
+      }
+
+      if (
+        tab ===
+        "journal"
+      ) {
+        renderJournal();
+      }
+
+      if (
+        tab ===
+        "profile"
+      ) {
+        renderProfile();
+      }
     }
 
 
-    renderEverything();
+    function showTab(tab) {
+      const safeTab =
+        tabMap[tab]
+          ? tab
+          : "home";
 
 
-    /*
-      =========================
-      BOTTOM NAVIGATION
-      =========================
-    */
+      Object
+        .values(
+          tabMap
+        )
+        .forEach(
+          section =>
+            section
+              .classList
+              .add(
+                "hidden"
+              )
+        );
+
+
+      document
+        .querySelectorAll(
+          ".tab-btn"
+        )
+        .forEach(
+          button =>
+            button
+              .classList
+              .toggle(
+                "active",
+                button.dataset.tab ===
+                  safeTab
+              )
+        );
+
+
+      renderTab(
+        safeTab
+      );
+
+
+      tabMap[
+        safeTab
+      ]
+        .classList
+        .remove(
+          "hidden"
+        );
+    }
+
 
     document
       .querySelectorAll(
@@ -2140,111 +3344,34 @@ document.addEventListener(
           button.addEventListener(
             "click",
             function () {
-
-              document
-                .querySelectorAll(
-                  ".tab-btn"
-                )
-                .forEach(
-                  item =>
-                    item
-                      .classList
-                      .remove(
-                        "active"
-                      )
-                );
-
-
-              button
-                .classList
-                .add(
-                  "active"
-                );
-
-
-              homeTab
-                .classList
-                .add(
-                  "hidden"
-                );
-
-              calendarTab
-                .classList
-                .add(
-                  "hidden"
-                );
-
-              journalTab
-                .classList
-                .add(
-                  "hidden"
-                );
-
-              profileTab
-                .classList
-                .add(
-                  "hidden"
-                );
-
-
-              const tab =
-                button.dataset.tab;
-
-
-              if (tab === "home") {
-                renderHome();
-
-                homeTab
-                  .classList
-                  .remove(
-                    "hidden"
-                  );
-              }
-
-
-              if (
-                tab === "calendar"
-              ) {
-                renderCalendar();
-
-                calendarTab
-                  .classList
-                  .remove(
-                    "hidden"
-                  );
-              }
-
-
-              if (
-                tab === "journal"
-              ) {
-                renderJournal();
-
-                journalTab
-                  .classList
-                  .remove(
-                    "hidden"
-                  );
-              }
-
-
-              if (
-                tab === "profile"
-              ) {
-                renderProfile();
-
-                profileTab
-                  .classList
-                  .remove(
-                    "hidden"
-                  );
-              }
-
+              showTab(
+                button.dataset.tab
+              );
             }
           );
 
         }
       );
+
+
+    /*
+      Other pages can choose which
+      dashboard tab should reopen.
+    */
+    const requestedTab =
+      localStorage.getItem(
+        "neurovia_return_tab"
+      );
+
+    localStorage.removeItem(
+      "neurovia_return_tab"
+    );
+
+
+    showTab(
+      requestedTab ||
+      "home"
+    );
 
   }
 );
