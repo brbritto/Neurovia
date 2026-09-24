@@ -2561,39 +2561,6 @@ document.addEventListener(
         </div>
 
 
-        <!-- READINESS GRAPH -->
-
-
-        <div class="card">
-
-          <p class="muted">
-            30-DAY BRAIN READINESS
-          </p>
-
-          <h2>
-            Your recent readiness
-          </h2>
-
-          <p class="section-subtitle">
-            The daily points show Brain Readiness
-            on days with a completed check-in.
-            The second line shows the average of
-            available check-ins from the previous
-            seven calendar days.
-          </p>
-
-          <p class="section-subtitle">
-            Missing days are not counted as zero.
-          </p>
-
-
-          ${buildReadinessChartSVG(
-            items
-          )}
-
-        </div>
-
-
         <!-- SUPPORTING TRENDS -->
 
 
