@@ -28,6 +28,8 @@
 
   <main class="screen-container">
 
+    <!-- DATE SELECTOR -->
+
     <div
       class="hero-card"
       style="max-width:620px;margin:0 auto 16px;"
@@ -42,9 +44,9 @@
       </h1>
 
       <p class="section-subtitle">
-        Choose a date to see your check-in,
-        scores and daily signals. Editing is
-        optional.
+        Choose a date to view your check-in.
+        If you forgot to complete one, you can
+        add it here.
       </p>
 
       <div class="input-row">
@@ -74,7 +76,44 @@
     </div>
 
 
-    <!-- READ-ONLY VIEW -->
+    <!-- NO CHECK-IN FOR THIS DAY -->
+
+    <section
+      id="missingDayView"
+      class="hidden"
+      style="max-width:620px;margin:0 auto;"
+    >
+
+      <div class="card">
+
+        <p class="muted">
+          NO CHECK-IN
+        </p>
+
+        <h2 id="missingDateTitle">
+          Nothing was recorded for this day.
+        </h2>
+
+        <p class="section-subtitle">
+          If you forgot to complete your Daily
+          Check-In, you can add it now. Neurovia
+          will save it under the selected date.
+        </p>
+
+        <button
+          id="addMissingDayBtn"
+          class="primary-btn"
+          type="button"
+        >
+          Add Check-In for this day
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- EXISTING DAY VIEW -->
 
     <section
       id="dayView"
@@ -194,6 +233,7 @@
         <div class="info-table">
 
           <div class="info-row">
+
             <strong>
               Fell asleep
             </strong>
@@ -201,10 +241,12 @@
             <span id="viewSleepTime">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Woke up
             </strong>
@@ -212,10 +254,12 @@
             <span id="viewWakeTime">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Sleep quality
             </strong>
@@ -223,10 +267,12 @@
             <span id="viewSleepQuality">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Stress
             </strong>
@@ -234,10 +280,12 @@
             <span id="viewStress">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Energy
             </strong>
@@ -245,10 +293,12 @@
             <span id="viewEnergy">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Mental demand
             </strong>
@@ -256,10 +306,12 @@
             <span id="viewWorkload">
               --
             </span>
+
           </div>
 
 
           <div class="info-row">
+
             <strong>
               Focus
             </strong>
@@ -267,6 +319,7 @@
             <span id="viewFocusDetail">
               --
             </span>
+
           </div>
 
         </div>
@@ -285,7 +338,7 @@
     </section>
 
 
-    <!-- EDIT MODE -->
+    <!-- CREATE / EDIT FORM -->
 
     <section
       id="editDaySection"
@@ -295,13 +348,21 @@
 
       <div class="card">
 
-        <p class="muted">
-          EDIT CHECK-IN
+        <p
+          id="formModeLabel"
+          class="muted"
+        >
+          CHECK-IN
         </p>
 
-        <h2>
-          Update this day
+        <h2 id="formTitle">
+          Daily Check-In
         </h2>
+
+        <p
+          id="formSubtitle"
+          class="section-subtitle"
+        ></p>
 
         <form id="previousDayForm">
 
@@ -351,29 +412,62 @@
           <div class="input-row">
 
             <label>
-              Sleep quality
+              How was your sleep quality?
             </label>
 
             <div class="input-box">
+
+              <i class="mdi mdi-bed-outline"></i>
 
               <select
                 id="sleepQuality"
                 required
               >
+
                 <option value="">
                   Select 1–10
                 </option>
 
-                <option value="1">1 — Very poor</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 — Average</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 — Excellent</option>
+                <option value="1">
+                  1 — Very poor
+                </option>
+
+                <option value="2">
+                  2
+                </option>
+
+                <option value="3">
+                  3
+                </option>
+
+                <option value="4">
+                  4
+                </option>
+
+                <option value="5">
+                  5 — Average
+                </option>
+
+                <option value="6">
+                  6
+                </option>
+
+                <option value="7">
+                  7
+                </option>
+
+                <option value="8">
+                  8
+                </option>
+
+                <option value="9">
+                  9
+                </option>
+
+                <option value="10">
+                  10 — Excellent
+                </option>
+
               </select>
 
             </div>
@@ -384,29 +478,62 @@
           <div class="input-row">
 
             <label>
-              Stress
+              How stressed did you feel?
             </label>
 
             <div class="input-box">
+
+              <i class="mdi mdi-brain"></i>
 
               <select
                 id="stressLevel"
                 required
               >
+
                 <option value="">
                   Select 1–10
                 </option>
 
-                <option value="1">1 — Very low</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 — Moderate</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 — Very high</option>
+                <option value="1">
+                  1 — Very low
+                </option>
+
+                <option value="2">
+                  2
+                </option>
+
+                <option value="3">
+                  3
+                </option>
+
+                <option value="4">
+                  4
+                </option>
+
+                <option value="5">
+                  5 — Moderate
+                </option>
+
+                <option value="6">
+                  6
+                </option>
+
+                <option value="7">
+                  7
+                </option>
+
+                <option value="8">
+                  8
+                </option>
+
+                <option value="9">
+                  9
+                </option>
+
+                <option value="10">
+                  10 — Very high
+                </option>
+
               </select>
 
             </div>
@@ -417,29 +544,62 @@
           <div class="input-row">
 
             <label>
-              Energy
+              How was your energy?
             </label>
 
             <div class="input-box">
+
+              <i class="mdi mdi-lightning-bolt-outline"></i>
 
               <select
                 id="energyLevel"
                 required
               >
+
                 <option value="">
                   Select 1–10
                 </option>
 
-                <option value="1">1 — Exhausted</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 — Moderate</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 — Very energized</option>
+                <option value="1">
+                  1 — Exhausted
+                </option>
+
+                <option value="2">
+                  2
+                </option>
+
+                <option value="3">
+                  3
+                </option>
+
+                <option value="4">
+                  4
+                </option>
+
+                <option value="5">
+                  5 — Moderate
+                </option>
+
+                <option value="6">
+                  6
+                </option>
+
+                <option value="7">
+                  7
+                </option>
+
+                <option value="8">
+                  8
+                </option>
+
+                <option value="9">
+                  9
+                </option>
+
+                <option value="10">
+                  10 — Very energized
+                </option>
+
               </select>
 
             </div>
@@ -450,29 +610,62 @@
           <div class="input-row">
 
             <label>
-              Mental demand
+              How mentally demanding was the day?
             </label>
 
             <div class="input-box">
+
+              <i class="mdi mdi-chart-timeline-variant"></i>
 
               <select
                 id="workloadLevel"
                 required
               >
+
                 <option value="">
                   Select 1–10
                 </option>
 
-                <option value="1">1 — Very light</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 — Moderate</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 — Extremely demanding</option>
+                <option value="1">
+                  1 — Very light
+                </option>
+
+                <option value="2">
+                  2
+                </option>
+
+                <option value="3">
+                  3
+                </option>
+
+                <option value="4">
+                  4
+                </option>
+
+                <option value="5">
+                  5 — Moderate
+                </option>
+
+                <option value="6">
+                  6
+                </option>
+
+                <option value="7">
+                  7
+                </option>
+
+                <option value="8">
+                  8
+                </option>
+
+                <option value="9">
+                  9
+                </option>
+
+                <option value="10">
+                  10 — Extremely demanding
+                </option>
+
               </select>
 
             </div>
@@ -483,29 +676,62 @@
           <div class="input-row">
 
             <label>
-              Focus
+              How well could you focus?
             </label>
 
             <div class="input-box">
+
+              <i class="mdi mdi-crosshairs-gps"></i>
 
               <select
                 id="focusLevel"
                 required
               >
+
                 <option value="">
                   Select 1–10
                 </option>
 
-                <option value="1">1 — Could not focus</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 — Moderate</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 — Very focused</option>
+                <option value="1">
+                  1 — Could not focus
+                </option>
+
+                <option value="2">
+                  2
+                </option>
+
+                <option value="3">
+                  3
+                </option>
+
+                <option value="4">
+                  4
+                </option>
+
+                <option value="5">
+                  5 — Moderate
+                </option>
+
+                <option value="6">
+                  6
+                </option>
+
+                <option value="7">
+                  7
+                </option>
+
+                <option value="8">
+                  8
+                </option>
+
+                <option value="9">
+                  9
+                </option>
+
+                <option value="10">
+                  10 — Very focused
+                </option>
+
               </select>
 
             </div>
@@ -514,10 +740,11 @@
 
 
           <button
+            id="saveDayBtn"
             class="primary-btn"
             type="submit"
           >
-            Save changes
+            Save Check-In
           </button>
 
 
@@ -537,8 +764,13 @@
     </section>
 
 
+    <!-- BACK -->
+
     <div
-      style="max-width:620px;margin:16px auto 0;"
+      style="
+        max-width:620px;
+        margin:16px auto 0;
+      "
     >
 
       <button
@@ -559,4 +791,5 @@
   <script src="js/previous-days.js"></script>
 
 </body>
+
 </html>
