@@ -12,6 +12,7 @@ document.addEventListener(
         "index.html";
 
       return;
+
     }
 
 
@@ -22,14 +23,6 @@ document.addEventListener(
       "true";
 
 
-    /*
-      Completed users normally
-      should not enter onboarding.
-
-      Exception:
-      explicit baseline retake.
-    */
-
     if (
       user.onboardingCompleted &&
       !isRetake
@@ -39,6 +32,7 @@ document.addEventListener(
         "dashboard.html";
 
       return;
+
     }
 
 
@@ -46,22 +40,17 @@ document.addEventListener(
       0;
 
 
-    /*
-      On a baseline retake,
-      prefill previous answers.
-
-      On first onboarding,
-      start empty.
-    */
-
     const answers =
       isRetake
+
         ? {
             ...(
               user.onboardingAnswers ||
+              user.baseline?.answers ||
               {}
             )
           }
+
         : {};
 
 
@@ -142,6 +131,7 @@ document.addEventListener(
 
         }
       );
+
     }
 
 
@@ -159,7 +149,9 @@ document.addEventListener(
 
       progressLabel.textContent =
         isRetake
+
           ? `Baseline update · Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`
+
           : `Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`;
 
 
@@ -182,12 +174,9 @@ document.addEventListener(
 
 
       if (
-        q.type ===
-          "number" ||
-        q.type ===
-          "time" ||
-        q.type ===
-          "text"
+        q.type === "number" ||
+        q.type === "time" ||
+        q.type === "text"
       ) {
 
         const row =
@@ -216,6 +205,7 @@ document.addEventListener(
             >
 
           </div>
+
         `;
 
 
@@ -223,6 +213,7 @@ document.addEventListener(
           .appendChild(
             row
           );
+
       }
 
 
@@ -259,7 +250,9 @@ document.addEventListener(
               (
                 answers[q.id] ===
                 option
+
                   ? " selected"
+
                   : ""
               );
 
@@ -277,6 +270,7 @@ document.addEventListener(
 
 
                 renderQuestion();
+
               }
             );
 
@@ -293,27 +287,34 @@ document.addEventListener(
           .appendChild(
             list
           );
+
       }
 
 
       backBtn.style.visibility =
         currentQuestionIndex ===
         0
+
           ? "hidden"
+
           : "visible";
 
 
       nextBtn.textContent =
         currentQuestionIndex ===
-        QUESTIONS.length - 1
+        QUESTIONS.length -
+        1
 
           ? (
               isRetake
+
                 ? "Save New Baseline"
+
                 : "Finish Baseline"
             )
 
           : "Next";
+
     }
 
 
@@ -326,12 +327,9 @@ document.addEventListener(
 
 
       if (
-        q.type ===
-          "number" ||
-        q.type ===
-          "time" ||
-        q.type ===
-          "text"
+        q.type === "number" ||
+        q.type === "time" ||
+        q.type === "text"
       ) {
 
         const input =
@@ -358,6 +356,7 @@ document.addEventListener(
 
 
           return false;
+
         }
 
 
@@ -366,6 +365,7 @@ document.addEventListener(
 
 
         return true;
+
       }
 
 
@@ -392,14 +392,17 @@ document.addEventListener(
 
 
           return false;
+
         }
 
 
         return true;
+
       }
 
 
       return false;
+
     }
 
 
@@ -416,7 +419,9 @@ document.addEventListener(
 
 
           renderQuestion();
+
         }
+
       }
     );
 
@@ -428,14 +433,14 @@ document.addEventListener(
         if (
           !saveCurrentAnswer()
         ) {
-
           return;
         }
 
 
         if (
           currentQuestionIndex <
-          QUESTIONS.length - 1
+          QUESTIONS.length -
+          1
         ) {
 
           currentQuestionIndex++;
@@ -445,6 +450,7 @@ document.addEventListener(
 
 
           return;
+
         }
 
 
@@ -452,27 +458,87 @@ document.addEventListener(
           getCurrentUserObject();
 
 
-        const profile = {};
+        /*
+          ACTIVE PROFILE
+
+          Sex, weight and height
+          are no longer stored as
+          active profile variables.
+        */
 
 
-        STATIC_FIELDS.forEach(
-          key => {
+        const profile = {
 
-            profile[
-              key
-            ] =
-              answers[
-                key
-              ];
+          age:
+            answers.age,
+
+          country:
+            answers.country,
+
+
+          /*
+            Baseline routine context
+            is available to the Daily
+            scoring engine.
+          */
+
+
+          baselineAnswers: {
+
+            sleepTime:
+              answers.sleepTime,
+
+            wakeTime:
+              answers.wakeTime,
+
+            fallAsleepDifficulty:
+              answers
+                .fallAsleepDifficulty,
+
+            mentalDemandHours:
+              answers
+                .mentalDemandHours
 
           }
-        );
+
+        };
+
+
+        /*
+          Only keep the current
+          relevant Baseline answers.
+        */
+
+
+        const cleanAnswers = {
+
+          age:
+            answers.age,
+
+          country:
+            answers.country,
+
+          sleepTime:
+            answers.sleepTime,
+
+          wakeTime:
+            answers.wakeTime,
+
+          fallAsleepDifficulty:
+            answers
+              .fallAsleepDifficulty,
+
+          mentalDemandHours:
+            answers
+              .mentalDemandHours
+
+        };
 
 
         const baselineScores =
           calculateBaselineScores(
             profile,
-            answers
+            cleanAnswers
           );
 
 
@@ -481,14 +547,14 @@ document.addEventListener(
 
 
         updatedUser.onboardingAnswers = {
-          ...answers
+          ...cleanAnswers
         };
 
 
         updatedUser.baseline = {
 
           answers: {
-            ...answers
+            ...cleanAnswers
           },
 
           scores:
@@ -512,6 +578,10 @@ document.addEventListener(
 
             date:
               todayKey(),
+
+            answers: {
+              ...cleanAnswers
+            },
 
             scores:
               baselineScores,
@@ -552,24 +622,10 @@ document.addEventListener(
         );
 
 
-        /*
-          Remove retake mode after
-          successful completion.
-        */
-
         sessionStorage.removeItem(
           "neurovia_retake_baseline"
         );
 
-
-        /*
-          First baseline:
-          go to first Daily Check-In.
-
-          Baseline retake:
-          return to dashboard because
-          daily history already exists.
-        */
 
         if (
           isRetake
