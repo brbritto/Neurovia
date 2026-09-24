@@ -1868,3 +1868,107 @@ input:checked + span {
   }
 
 }
+/* =========================================
+   IMPROVEMENT — PERSONAL PATTERNS
+   ========================================= */
+
+.personal-pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+  margin-bottom: 16px;
+}
+
+.personal-pattern-card {
+  margin: 0;
+}
+
+.pattern-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.pattern-comparison span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  padding: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.pattern-comparison strong {
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.pattern-positive {
+  border-color:
+    rgba(25, 214, 193, 0.24);
+}
+
+.pattern-neutral {
+  border-color:
+    rgba(147, 164, 184, 0.15);
+}
+
+
+/* =========================================
+   IMPROVEMENT — READINESS GRAPH
+   ========================================= */
+
+.chart-readiness-point {
+  fill: var(--accent);
+  stroke: var(--bg-main);
+  stroke-width: 2px;
+}
+
+.chart-readiness-average {
+  stroke: var(--accent-2);
+  stroke-width: 4px;
+  stroke-dasharray: 9 7;
+  opacity: 0.9;
+}
+
+.legend-readiness-average::before {
+  content: "";
+  display: inline-block;
+
+  width: 18px;
+  height: 3px;
+
+  margin-right: 7px;
+  vertical-align: middle;
+
+  background: var(--accent-2);
+  border-radius: 999px;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+  .personal-pattern-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pattern-comparison {
+    grid-template-columns: 1fr;
+  }
+
+}
