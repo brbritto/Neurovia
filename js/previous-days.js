@@ -2,7 +2,7 @@ document.addEventListener(
   "DOMContentLoaded",
   function () {
 
-    const user =
+    let user =
       getCurrentUserObject();
 
 
@@ -10,10 +10,12 @@ document.addEventListener(
       !user ||
       !user.onboardingCompleted
     ) {
+
       window.location.href =
         "index.html";
 
       return;
+
     }
 
 
@@ -22,20 +24,24 @@ document.addEventListener(
         "selectedDate"
       );
 
+
     const message =
       document.getElementById(
         "previousMessage"
       );
+
 
     const dayView =
       document.getElementById(
         "dayView"
       );
 
+
     const missingDayView =
       document.getElementById(
         "missingDayView"
       );
+
 
     const editDaySection =
       document.getElementById(
@@ -51,15 +57,12 @@ document.addEventListener(
       today;
 
 
-    /*
-      false = editing existing log
-      true  = creating forgotten log
-    */
     let creatingMissingDay =
       false;
 
 
     function formatDateKey(key) {
+
       const date =
         dateFromKey(key);
 
@@ -72,23 +75,18 @@ document.addEventListener(
       return date.toLocaleDateString(
         "en-US",
         {
-          weekday:
-            "long",
-
-          month:
-            "long",
-
-          day:
-            "numeric",
-
-          year:
-            "numeric"
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
         }
       );
+
     }
 
 
     function formatTime(time) {
+
       if (!time) {
         return "--";
       }
@@ -120,13 +118,11 @@ document.addEventListener(
       return date.toLocaleTimeString(
         "en-US",
         {
-          hour:
-            "numeric",
-
-          minute:
-            "2-digit"
+          hour: "numeric",
+          minute: "2-digit"
         }
       );
+
     }
 
 
@@ -134,6 +130,7 @@ document.addEventListener(
       id,
       value
     ) {
+
       const element =
         document.getElementById(
           id
@@ -141,9 +138,12 @@ document.addEventListener(
 
 
       if (element) {
+
         element.textContent =
           value;
+
       }
+
     }
 
 
@@ -151,116 +151,56 @@ document.addEventListener(
       id,
       value
     ) {
+
       const element =
         document.getElementById(
           id
         );
 
 
-      if (
-        element &&
-        value !== undefined &&
-        value !== null
-      ) {
-        element.value =
-          value;
+      if (!element) {
+        return;
       }
+
+
+      element.value =
+        value ??
+        "";
+
     }
 
 
     function clearForm() {
+
       [
         "sleepTime",
         "wakeTime",
         "sleepQuality",
+        "restedLevel",
+        "screenBeforeSleep",
         "stressLevel",
         "energyLevel",
         "workloadLevel",
+        "distractionLevel",
+        "breaksLevel",
         "focusLevel"
       ]
         .forEach(
           id => {
 
-            const element =
-              document.getElementById(
-                id
-              );
-
-
-            if (element) {
-              element.value =
-                "";
-            }
+            setValue(
+              id,
+              ""
+            );
 
           }
         );
-    }
 
-
-    function calculateSleepHours(
-      sleepTime,
-      wakeTime
-    ) {
-      if (
-        !sleepTime ||
-        !wakeTime
-      ) {
-        return null;
-      }
-
-
-      const [
-        sleepHour,
-        sleepMinute
-      ] =
-        sleepTime
-          .split(":")
-          .map(Number);
-
-
-      const [
-        wakeHour,
-        wakeMinute
-      ] =
-        wakeTime
-          .split(":")
-          .map(Number);
-
-
-      let sleep =
-        sleepHour * 60 +
-        sleepMinute;
-
-
-      let wake =
-        wakeHour * 60 +
-        wakeMinute;
-
-
-      /*
-        Example:
-        sleep 23:00
-        wake 07:00
-
-        Wake time is technically
-        "smaller", so add 24h.
-      */
-      if (wake <= sleep) {
-        wake +=
-          24 * 60;
-      }
-
-
-      return Number(
-        (
-          (wake - sleep) /
-          60
-        ).toFixed(1)
-      );
     }
 
 
     function hideViews() {
+
       dayView
         .classList
         .add(
@@ -280,12 +220,14 @@ document.addEventListener(
         .add(
           "hidden"
         );
+
     }
 
 
     function populateEditForm(
       log
     ) {
+
       clearForm();
 
 
@@ -304,6 +246,28 @@ document.addEventListener(
       setValue(
         "sleepQuality",
         log.sleepQuality
+      );
+
+
+      /*
+        Old logs may not have
+        these new fields yet.
+
+        We deliberately leave
+        them empty instead of
+        inventing historical data.
+      */
+
+
+      setValue(
+        "restedLevel",
+        log.restedLevel
+      );
+
+
+      setValue(
+        "screenBeforeSleep",
+        log.screenBeforeSleep
       );
 
 
@@ -326,38 +290,39 @@ document.addEventListener(
 
 
       setValue(
+        "distractionLevel",
+        log.distractionLevel
+      );
+
+
+      setValue(
+        "breaksLevel",
+        log.breaksLevel
+      );
+
+
+      setValue(
         "focusLevel",
         log.focusLevel
       );
+
     }
 
 
     function showMissingDay(
       date
     ) {
+
       creatingMissingDay =
         true;
 
 
-      dayView
-        .classList
-        .add(
-          "hidden"
-        );
-
-
-      editDaySection
-        .classList
-        .add(
-          "hidden"
-        );
+      hideViews();
 
 
       setText(
         "missingDateTitle",
-        `No check-in for ${formatDateKey(
-          date
-        )}`
+        `No check-in for ${formatDateKey(date)}`
       );
 
 
@@ -366,6 +331,7 @@ document.addEventListener(
         .remove(
           "hidden"
         );
+
     }
 
 
@@ -373,54 +339,35 @@ document.addEventListener(
       date,
       log
     ) {
+
       creatingMissingDay =
         false;
 
 
-      missingDayView
-        .classList
-        .add(
-          "hidden"
-        );
-
-
-      editDaySection
-        .classList
-        .add(
-          "hidden"
-        );
+      hideViews();
 
 
       const scores =
-        log.scores || {};
+        log.scores ||
+        {};
 
 
       const readiness =
         Number(
           scores.brainReadiness ??
-          scores.overall
-        );
-
-
-      const calculatedSleep =
-        calculateSleepHours(
-          log.sleepTime,
-          log.wakeTime
-        );
-
-
-      const scoreSleep =
-        Number(
-          scores.sleepHours
+          scores.overall ??
+          0
         );
 
 
       const sleepHours =
-        Number.isFinite(
-          scoreSleep
-        )
-          ? scoreSleep
-          : calculatedSleep;
+        Number(
+          scores.sleepHours ??
+          calculateSleepHours(
+            log.sleepTime,
+            log.wakeTime
+          )
+        );
 
 
       setText(
@@ -433,13 +380,9 @@ document.addEventListener(
 
       setText(
         "readinessNumber",
-        Number.isFinite(
+        Math.round(
           readiness
         )
-          ? Math.round(
-              readiness
-            )
-          : "--"
       );
 
 
@@ -449,74 +392,56 @@ document.addEventListener(
         );
 
 
-      readinessBar.style.width =
-        Number.isFinite(
-          readiness
-        )
-          ? `${
-              Math.max(
-                0,
-                Math.min(
-                  100,
-                  readiness
-                )
-              )
-            }%`
-          : "0%";
+      if (
+        readinessBar
+      ) {
+
+        readinessBar.style.width =
+          `${Math.max(
+            0,
+            Math.min(
+              100,
+              readiness
+            )
+          )}%`;
+
+      }
 
 
       setText(
         "viewRecovery",
-        Number.isFinite(
+        Math.round(
           Number(
-            scores.recovery
+            scores.recovery ||
+            0
           )
         )
-          ? Math.round(
-              Number(
-                scores.recovery
-              )
-            )
-          : "--"
       );
 
 
       setText(
         "viewCognitiveLoad",
-        Number.isFinite(
+        Math.round(
           Number(
-            scores.cognitiveLoad
+            scores.cognitiveLoad ||
+            0
           )
         )
-          ? Math.round(
-              Number(
-                scores.cognitiveLoad
-              )
-            )
-          : "--"
       );
 
 
       setText(
         "viewFocus",
-        Number.isFinite(
-          Number(
-            log.focusLevel
-          )
-        )
-          ? `${log.focusLevel}/10`
-          : "--"
+        `${log.focusLevel ?? "--"}/10`
       );
 
 
       setText(
         "viewSleep",
         Number.isFinite(
-          Number(
-            sleepHours
-          )
+          sleepHours
         )
-          ? `${sleepHours}h`
+          ? `${sleepHours.toFixed(1)}h`
           : "--"
       );
 
@@ -538,24 +463,41 @@ document.addEventListener(
 
 
       setText(
-        "viewSleepQuality",
+        "viewSleepHours",
         Number.isFinite(
-          Number(
-            log.sleepQuality
-          )
+          sleepHours
         )
+          ? `${sleepHours.toFixed(1)} hours`
+          : "--"
+      );
+
+
+      setText(
+        "viewSleepQuality",
+        log.sleepQuality !== undefined
           ? `${log.sleepQuality}/10`
           : "--"
       );
 
 
       setText(
+        "viewRested",
+        log.restedLevel !== undefined
+          ? `${log.restedLevel}/10`
+          : "Not recorded"
+      );
+
+
+      setText(
+        "viewScreenBeforeSleep",
+        log.screenBeforeSleep ||
+        "Not recorded"
+      );
+
+
+      setText(
         "viewStress",
-        Number.isFinite(
-          Number(
-            log.stressLevel
-          )
-        )
+        log.stressLevel !== undefined
           ? `${log.stressLevel}/10`
           : "--"
       );
@@ -563,11 +505,7 @@ document.addEventListener(
 
       setText(
         "viewEnergy",
-        Number.isFinite(
-          Number(
-            log.energyLevel
-          )
-        )
+        log.energyLevel !== undefined
           ? `${log.energyLevel}/10`
           : "--"
       );
@@ -575,30 +513,32 @@ document.addEventListener(
 
       setText(
         "viewWorkload",
-        Number.isFinite(
-          Number(
-            log.workloadLevel
-          )
-        )
+        log.workloadLevel !== undefined
           ? `${log.workloadLevel}/10`
           : "--"
       );
 
 
       setText(
-        "viewFocusDetail",
-        Number.isFinite(
-          Number(
-            log.focusLevel
-          )
-        )
-          ? `${log.focusLevel}/10`
-          : "--"
+        "viewDistraction",
+        log.distractionLevel !== undefined
+          ? `${log.distractionLevel}/5`
+          : "Not recorded"
       );
 
 
-      populateEditForm(
-        log
+      setText(
+        "viewBreaks",
+        log.breaksLevel ||
+        "Not recorded"
+      );
+
+
+      setText(
+        "viewFocusDetail",
+        log.focusLevel !== undefined
+          ? `${log.focusLevel}/10`
+          : "--"
       );
 
 
@@ -607,25 +547,21 @@ document.addEventListener(
         .remove(
           "hidden"
         );
+
     }
 
 
     function renderSelectedDay() {
-      const date =
-        selectedDate.value;
-
 
       message.textContent =
         "";
 
-      message
-        .classList
-        .remove(
-          "error"
-        );
-
 
       hideViews();
+
+
+      const date =
+        selectedDate.value;
 
 
       if (!date) {
@@ -634,43 +570,39 @@ document.addEventListener(
 
 
       if (
-        date > today
+        date >
+        today
       ) {
+
+        message.textContent =
+          "Future days cannot be edited.";
+
         selectedDate.value =
           "";
 
-
-        message.textContent =
-          "Future dates belong in the Brain Calendar.";
-
-
-        message
-          .classList
-          .add(
-            "error"
-          );
-
-
         return;
+
       }
 
 
-      const freshUser =
+      user =
         getCurrentUserObject();
 
 
       const log =
-        freshUser.dailyLogs?.[
+        user.dailyLogs?.[
           date
         ];
 
 
       if (!log) {
+
         showMissingDay(
           date
         );
 
         return;
+
       }
 
 
@@ -678,10 +610,12 @@ document.addEventListener(
         date,
         log
       );
+
     }
 
 
     function openCreateForm() {
+
       const date =
         selectedDate.value;
 
@@ -698,18 +632,7 @@ document.addEventListener(
       clearForm();
 
 
-      missingDayView
-        .classList
-        .add(
-          "hidden"
-        );
-
-
-      dayView
-        .classList
-        .add(
-          "hidden"
-        );
+      hideViews();
 
 
       setText(
@@ -720,21 +643,15 @@ document.addEventListener(
 
       setText(
         "formTitle",
-        `Add ${formatDateKey(
+        formatDateKey(
           date
-        )}`
+        )
       );
 
 
       setText(
         "formSubtitle",
-        "Complete the signals you remember from this day. The check-in will be saved under the selected date."
-      );
-
-
-      setText(
-        "saveDayBtn",
-        "Save Check-In"
+        "Add the information you remember for this day."
       );
 
 
@@ -744,19 +661,11 @@ document.addEventListener(
           "hidden"
         );
 
-
-      editDaySection
-        .scrollIntoView({
-          behavior:
-            "smooth",
-
-          block:
-            "start"
-        });
     }
 
 
     function openEditForm() {
+
       const date =
         selectedDate.value;
 
@@ -766,19 +675,22 @@ document.addEventListener(
       }
 
 
-      const freshUser =
+      user =
         getCurrentUserObject();
 
 
       const log =
-        freshUser.dailyLogs?.[
+        user.dailyLogs?.[
           date
         ];
 
 
       if (!log) {
+
         openCreateForm();
+
         return;
+
       }
 
 
@@ -791,6 +703,9 @@ document.addEventListener(
       );
 
 
+      hideViews();
+
+
       setText(
         "formModeLabel",
         "EDIT CHECK-IN"
@@ -799,36 +714,16 @@ document.addEventListener(
 
       setText(
         "formTitle",
-        `Edit ${formatDateKey(
+        formatDateKey(
           date
-        )}`
+        )
       );
 
 
       setText(
         "formSubtitle",
-        "Update any information that was entered incorrectly for this day."
+        "Update the information recorded for this day."
       );
-
-
-      setText(
-        "saveDayBtn",
-        "Save changes"
-      );
-
-
-      dayView
-        .classList
-        .add(
-          "hidden"
-        );
-
-
-      missingDayView
-        .classList
-        .add(
-          "hidden"
-        );
 
 
       editDaySection
@@ -837,23 +732,13 @@ document.addEventListener(
           "hidden"
         );
 
-
-      editDaySection
-        .scrollIntoView({
-          behavior:
-            "smooth",
-
-          block:
-            "start"
-        });
     }
 
 
-    selectedDate
-      .addEventListener(
-        "change",
-        renderSelectedDay
-      );
+    selectedDate.addEventListener(
+      "change",
+      renderSelectedDay
+    );
 
 
     document
@@ -884,10 +769,6 @@ document.addEventListener(
         "click",
         function () {
 
-          /*
-            Return to whichever state
-            this selected date belongs to.
-          */
           renderSelectedDay();
 
         }
@@ -900,7 +781,9 @@ document.addEventListener(
       )
       .addEventListener(
         "submit",
-        function (event) {
+        function (
+          event
+        ) {
 
           event.preventDefault();
 
@@ -909,36 +792,10 @@ document.addEventListener(
             selectedDate.value;
 
 
-          if (!date) {
-            message.textContent =
-              "Please select a date.";
-
-
-            message
-              .classList
-              .add(
-                "error"
-              );
-
-
-            return;
-          }
-
-
           if (
+            !date ||
             date > today
           ) {
-            message.textContent =
-              "Future dates belong in the Brain Calendar, not the Daily Check-In.";
-
-
-            message
-              .classList
-              .add(
-                "error"
-              );
-
-
             return;
           }
 
@@ -948,117 +805,117 @@ document.addEventListener(
 
 
           updated.dailyLogs =
-            updated.dailyLogs || {};
+            updated.dailyLogs ||
+            {};
 
 
-          const sleepTime =
-            document
-              .getElementById(
-                "sleepTime"
-              )
-              .value;
-
-
-          const wakeTime =
-            document
-              .getElementById(
-                "wakeTime"
-              )
-              .value;
-
-
-          const sleepQuality =
-            Number(
-              document
-                .getElementById(
-                  "sleepQuality"
-                )
-                .value
-            );
-
-
-          const stressLevel =
-            Number(
-              document
-                .getElementById(
-                  "stressLevel"
-                )
-                .value
-            );
-
-
-          const energyLevel =
-            Number(
-              document
-                .getElementById(
-                  "energyLevel"
-                )
-                .value
-            );
-
-
-          const workloadLevel =
-            Number(
-              document
-                .getElementById(
-                  "workloadLevel"
-                )
-                .value
-            );
-
-
-          const focusLevel =
-            Number(
-              document
-                .getElementById(
-                  "focusLevel"
-                )
-                .value
-            );
-
-
-          const log = {
-            sleepTime,
-            wakeTime,
-            sleepQuality,
-            stressLevel,
-            energyLevel,
-            workloadLevel,
-            focusLevel
-          };
-
-
-          /*
-            calculateScores uses exactly
-            the same scoring logic as the
-            normal Daily Check-In.
-          */
-          const scores =
-            calculateScores(
-              updated.profile,
-              log
-            );
-
-
-          /*
-            If there was already a record,
-            preserve createdAt if available.
-
-            If this is a forgotten day,
-            create a historical record now.
-          */
           const previous =
             updated.dailyLogs[
               date
             ];
 
 
+          const numberValue =
+            id =>
+              Number(
+                document
+                  .getElementById(
+                    id
+                  )
+                  .value
+              );
+
+
+          const log = {
+
+            sleepTime:
+              document
+                .getElementById(
+                  "sleepTime"
+                )
+                .value,
+
+
+            wakeTime:
+              document
+                .getElementById(
+                  "wakeTime"
+                )
+                .value,
+
+
+            sleepQuality:
+              numberValue(
+                "sleepQuality"
+              ),
+
+
+            restedLevel:
+              numberValue(
+                "restedLevel"
+              ),
+
+
+            screenBeforeSleep:
+              document
+                .getElementById(
+                  "screenBeforeSleep"
+                )
+                .value,
+
+
+            stressLevel:
+              numberValue(
+                "stressLevel"
+              ),
+
+
+            energyLevel:
+              numberValue(
+                "energyLevel"
+              ),
+
+
+            workloadLevel:
+              numberValue(
+                "workloadLevel"
+              ),
+
+
+            distractionLevel:
+              numberValue(
+                "distractionLevel"
+              ),
+
+
+            breaksLevel:
+              document
+                .getElementById(
+                  "breaksLevel"
+                )
+                .value,
+
+
+            focusLevel:
+              numberValue(
+                "focusLevel"
+              )
+
+          };
+
+
+          log.scores =
+            calculateScores(
+              updated.profile,
+              log
+            );
+
+
           updated.dailyLogs[
             date
           ] = {
-            ...log,
 
-            scores,
+            ...log,
 
             createdAt:
               previous?.createdAt ||
@@ -1068,6 +925,7 @@ document.addEventListener(
             updatedAt:
               new Date()
                 .toISOString()
+
           };
 
 
@@ -1076,42 +934,15 @@ document.addEventListener(
           );
 
 
-          const wasCreating =
-            creatingMissingDay;
+          user =
+            getCurrentUserObject();
 
 
           creatingMissingDay =
             false;
 
 
-          /*
-            After saving we do NOT send
-            the user back to Dashboard.
-
-            Instead, immediately show the
-            newly created/edited day.
-          */
           renderSelectedDay();
-
-
-          message.textContent =
-            wasCreating
-              ? "Check-In added successfully."
-              : "Changes saved successfully.";
-
-
-          message
-            .classList
-            .remove(
-              "error"
-            );
-
-
-          window.scrollTo({
-            top: 0,
-            behavior:
-              "smooth"
-          });
 
         }
       );
@@ -1136,6 +967,9 @@ document.addEventListener(
 
         }
       );
+
+
+    hideViews();
 
   }
 );
