@@ -1,4 +1,5 @@
 function clamp100(value) {
+
   return Math.max(
     0,
     Math.min(
@@ -6,7 +7,13 @@ function clamp100(value) {
       Math.round(value)
     )
   );
+
 }
+
+
+/* =========================
+   TIME HELPERS
+   ========================= */
 
 
 function parseTimeToMinutes(value) {
@@ -18,6 +25,7 @@ function parseTimeToMinutes(value) {
     return 0;
   }
 
+
   const [
     hours,
     minutes
@@ -26,10 +34,65 @@ function parseTimeToMinutes(value) {
       .split(":")
       .map(Number);
 
+
   return (
     hours * 60 +
     minutes
   );
+
+}
+
+
+function circularMinuteDifference(
+  firstTime,
+  secondTime
+) {
+
+  if (
+    !firstTime ||
+    !secondTime
+  ) {
+    return null;
+  }
+
+
+  const first =
+    parseTimeToMinutes(
+      firstTime
+    );
+
+
+  const second =
+    parseTimeToMinutes(
+      secondTime
+    );
+
+
+  let difference =
+    Math.abs(
+      first -
+      second
+    );
+
+
+  /*
+    Handles midnight correctly.
+
+    Example:
+    23:30 and 00:30
+    should be 60 minutes apart,
+    not 23 hours apart.
+  */
+
+  difference =
+    Math.min(
+      difference,
+      1440 - difference
+    );
+
+
+  return difference;
+
 }
 
 
@@ -58,18 +121,32 @@ function calculateSleepHours(
     );
 
 
-  if (wake <= sleep) {
-    wake += 24 * 60;
+  if (
+    wake <= sleep
+  ) {
+
+    wake +=
+      24 * 60;
+
   }
 
 
   return Number(
     (
-      (wake - sleep) /
+      (
+        wake -
+        sleep
+      ) /
       60
     ).toFixed(1)
   );
+
 }
+
+
+/* =========================
+   SLEEP REFERENCE
+   ========================= */
 
 
 function recommendedSleepRange(age) {
@@ -82,10 +159,12 @@ function recommendedSleepRange(age) {
     n >= 6 &&
     n <= 12
   ) {
+
     return {
       min: 9,
       max: 12
     };
+
   }
 
 
@@ -93,10 +172,12 @@ function recommendedSleepRange(age) {
     n >= 13 &&
     n <= 17
   ) {
+
     return {
       min: 8,
       max: 10
     };
+
   }
 
 
@@ -104,18 +185,24 @@ function recommendedSleepRange(age) {
     n >= 18 &&
     n <= 64
   ) {
+
     return {
       min: 7,
       max: 9
     };
+
   }
 
 
-  if (n >= 65) {
+  if (
+    n >= 65
+  ) {
+
     return {
       min: 7,
       max: 8
     };
+
   }
 
 
@@ -123,6 +210,7 @@ function recommendedSleepRange(age) {
     min: 8,
     max: 10
   };
+
 }
 
 
@@ -146,7 +234,9 @@ function calculateSleepScore(
     sleepHours >= range.min &&
     sleepHours <= range.max
   ) {
+
     return 100;
+
   }
 
 
@@ -164,6 +254,7 @@ function calculateSleepScore(
       100 -
       deficit * 22
     );
+
   }
 
 
@@ -176,6 +267,7 @@ function calculateSleepScore(
     100 -
     excess * 12
   );
+
 }
 
 
@@ -202,15 +294,181 @@ function calculateDailySleepDebt(
       sleepHours
     ).toFixed(1)
   );
+
 }
 
 
-/*
-  DAILY CHECK-IN SCORING
+/* =========================
+   GENERIC HELPERS
+   ========================= */
 
-  These are Neurovia wellness estimates.
-  They are not diagnostic measurements.
+
+function optionScore(
+  value,
+  map,
+  fallback = 50
+) {
+
+  return (
+    map[value] ??
+    fallback
+  );
+
+}
+
+
+function averageNumbers(
+  values
+) {
+
+  const valid =
+    (values || [])
+      .map(Number)
+      .filter(
+        Number.isFinite
+      );
+
+
+  if (
+    !valid.length
+  ) {
+    return null;
+  }
+
+
+  return (
+    valid.reduce(
+      (
+        total,
+        value
+      ) =>
+        total +
+        value,
+      0
+    ) /
+    valid.length
+  );
+
+}
+
+
+/* =========================
+   NEW DAILY VARIABLES
+   ========================= */
+
+
+function screenMinutesFromAnswer(
+  value
+) {
+
+  const map = {
+
+    "None":
+      0,
+
+    "Less than 15 min":
+      10,
+
+    "15 to 30 min":
+      22.5,
+
+    "30 to 45 min":
+      37.5,
+
+    "More than 45 min":
+      55
+
+  };
+
+
+  return (
+    map[value] ??
+    null
+  );
+
+}
+
+
+function breakSupportScore(
+  value
+) {
+
+  return optionScore(
+    value,
+    {
+
+      "None":
+        20,
+
+      "Few":
+        45,
+
+      "Some":
+        75,
+
+      "Enough":
+        100
+
+    },
+    50
+  );
+
+}
+
+
+function getRestedScore(
+  value
+) {
+
+  const number =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return 50;
+  }
+
+
+  return clamp100(
+    number *
+    10
+  );
+
+}
+
+
+/* =========================
+   BASELINE HELPERS
+   ========================= */
+
+
+function getBaselineAnswers(
+  profile
+) {
+
+  return (
+    profile?.baselineAnswers ||
+    {}
+  );
+
+}
+
+
+/* =========================
+   DAILY CHECK-IN SCORING
+   ========================= */
+
+
+/*
+  Neurovia scores are wellness
+  estimates.
+
+  They are not diagnostic
+  measurements.
 */
+
 
 function calculateScores(
   profile,
@@ -224,10 +482,35 @@ function calculateScores(
     );
 
 
+  const baseline =
+    getBaselineAnswers(
+      profile
+    );
+
+
+  /*
+    DAILY INPUTS
+  */
+
+
   const sleepHours =
     calculateSleepHours(
       log.sleepTime,
       log.wakeTime
+    );
+
+
+  const sleepQuality =
+    Number(
+      log.sleepQuality ||
+      5
+    );
+
+
+  const rested =
+    Number(
+      log.restedLevel ||
+      5
     );
 
 
@@ -252,6 +535,13 @@ function calculateScores(
     );
 
 
+  const distraction =
+    Number(
+      log.distractionLevel ||
+      3
+    );
+
+
   const focus =
     Number(
       log.focusLevel ||
@@ -259,11 +549,9 @@ function calculateScores(
     );
 
 
-  const sleepQuality =
-    Number(
-      log.sleepQuality ||
-      5
-    );
+  /*
+    SLEEP
+  */
 
 
   const sleepDurationScore =
@@ -280,95 +568,274 @@ function calculateScores(
     );
 
 
+  const wakeRestedScore =
+    getRestedScore(
+      rested
+    );
+
+
+  /*
+    Duration:
+    50%
+
+    Subjective sleep quality:
+    30%
+
+    How restored the person
+    felt after waking:
+    20%
+  */
+
+
   const sleep =
     clamp100(
+
       sleepDurationScore *
-      0.65 +
+      0.50 +
 
       sleepQualityScore *
-      0.35
+      0.30 +
+
+      wakeRestedScore *
+      0.20
+
     );
+
+
+  /*
+    STRESS
+  */
 
 
   const stressControl =
     clamp100(
       110 -
-      stress * 10
+      stress *
+      10
     );
+
+
+  /*
+    ENERGY
+  */
 
 
   const energyScore =
     clamp100(
-      energy * 10
+      energy *
+      10
     );
+
+
+  /*
+    FOCUS
+  */
 
 
   const focusScore =
     clamp100(
-      focus * 10
+      focus *
+      10
     );
 
 
   /*
-    Cognitive Load:
-    higher number =
-    greater mental demand.
+    DISTRACTION
+
+    1 = very focused environment
+    5 = extremely distracting
   */
+
+
+  const distractionControl =
+    clamp100(
+      110 -
+      distraction *
+      20
+    );
+
+
+  /*
+    BREAKS
+  */
+
+
+  const breaksSupport =
+    breakSupportScore(
+      log.breaksLevel
+    );
+
+
+  /*
+    COGNITIVE LOAD
+
+    Higher score =
+    greater cognitive load.
+
+    Mental demand remains the
+    largest component.
+
+    Stress, low focus,
+    distraction and lack of
+    breaks also contribute.
+  */
+
 
   const cognitiveLoad =
     clamp100(
 
-      workload * 6 +
+      workload *
+      5.0 +
 
-      stress * 4 +
+      stress *
+      2.5 +
 
-      (10 - focus) * 3
+      (
+        10 -
+        focus
+      ) *
+      1.5 +
+
+      (
+        100 -
+        distractionControl
+      ) *
+      0.10 +
+
+      (
+        100 -
+        breaksSupport
+      ) *
+      0.10
 
     );
 
 
   /*
-    Recovery gives the
-    strongest weight to sleep.
+    RECOVERY
+
+    Sleep remains the largest
+    contributor.
+
+    Energy, stress regulation
+    and breaks also matter.
   */
+
 
   const recovery =
     clamp100(
 
-      sleep * 0.50 +
+      sleep *
+      0.45 +
 
-      energyScore * 0.30 +
+      energyScore *
+      0.25 +
 
-      stressControl * 0.20
+      stressControl *
+      0.20 +
+
+      breaksSupport *
+      0.10
 
     );
 
 
   /*
-    Brain Readiness combines
-    sleep, recovery, focus and
-    inverse cognitive load.
+    BRAIN READINESS
   */
+
 
   const brainReadiness =
     clamp100(
 
-      sleep * 0.30 +
+      sleep *
+      0.30 +
 
-      recovery * 0.30 +
+      recovery *
+      0.30 +
 
-      focusScore * 0.25 +
+      focusScore *
+      0.25 +
 
-      (100 - cognitiveLoad) *
+      (
+        100 -
+        cognitiveLoad
+      ) *
       0.15
 
     );
+
+
+  /*
+    SLEEP DEBT
+  */
 
 
   const sleepDebt =
     calculateDailySleepDebt(
       age,
       sleepHours
+    );
+
+
+  /*
+    BASELINE COMPARISON
+
+    These variables make the
+    Baseline useful after the
+    onboarding.
+
+    We compare today's sleep
+    schedule with the person's
+    usual sleep schedule.
+  */
+
+
+  const usualSleepTime =
+    baseline.sleepTime ||
+    null;
+
+
+  const usualWakeTime =
+    baseline.wakeTime ||
+    null;
+
+
+  const sleepTimeShiftMinutes =
+    circularMinuteDifference(
+      log.sleepTime,
+      usualSleepTime
+    );
+
+
+  const wakeTimeShiftMinutes =
+    circularMinuteDifference(
+      log.wakeTime,
+      usualWakeTime
+    );
+
+
+  /*
+    SCREEN TIME
+
+    IMPORTANT:
+
+    Screen time is recorded as
+    a context variable.
+
+    Neurovia does NOT directly
+    subtract points just because
+    the user used a screen.
+
+    Instead, repeated observations
+    can later be compared with
+    sleep quality.
+  */
+
+
+  const screenBeforeSleepMinutes =
+    screenMinutesFromAnswer(
+      log.screenBeforeSleep
     );
 
 
@@ -404,61 +871,51 @@ function calculateScores(
 
     workload,
 
-    focus
+    focus,
+
+    rested,
+
+    distraction,
+
+    distractionControl,
+
+    breaksSupport,
+
+    screenBeforeSleepMinutes,
+
+    sleepTimeShiftMinutes,
+
+    wakeTimeShiftMinutes,
+
+    usualSleepTime,
+
+    usualWakeTime
 
   };
+
 }
 
 
-function getLatestLog(user) {
+/* =========================
+   LOG HELPERS
+   ========================= */
 
-  if (
-    !user?.dailyLogs
-  ) {
-    return null;
-  }
 
+function getLatestLog(
+  user
+) {
 
   const dates =
     Object
       .keys(
-        user.dailyLogs
-      )
-      .sort();
-
-
-  if (!dates.length) {
-    return null;
-  }
-
-
-  return user.dailyLogs[
-    dates[
-      dates.length - 1
-    ]
-  ];
-}
-
-
-function getPreviousLog(user) {
-
-  if (
-    !user?.dailyLogs
-  ) {
-    return null;
-  }
-
-
-  const dates =
-    Object
-      .keys(
-        user.dailyLogs
+        user?.dailyLogs ||
+        {}
       )
       .sort();
 
 
   if (
-    dates.length < 2
+    !dates.length
   ) {
     return null;
   }
@@ -466,13 +923,53 @@ function getPreviousLog(user) {
 
   return user.dailyLogs[
     dates[
-      dates.length - 2
+      dates.length -
+      1
     ]
   ];
+
 }
 
 
-function getAverageOfLogs(logs) {
+function getPreviousLog(
+  user
+) {
+
+  const dates =
+    Object
+      .keys(
+        user?.dailyLogs ||
+        {}
+      )
+      .sort();
+
+
+  if (
+    dates.length <
+    2
+  ) {
+    return null;
+  }
+
+
+  return user.dailyLogs[
+    dates[
+      dates.length -
+      2
+    ]
+  ];
+
+}
+
+
+/* =========================
+   AVERAGES
+   ========================= */
+
+
+function getAverageOfLogs(
+  logs
+) {
 
   const validLogs =
     (logs || [])
@@ -483,22 +980,29 @@ function getAverageOfLogs(logs) {
       );
 
 
-  if (!validLogs.length) {
+  if (
+    !validLogs.length
+  ) {
     return null;
   }
 
 
   const totals = {
 
-    sleep: 0,
+    sleep:
+      0,
 
-    recovery: 0,
+    recovery:
+      0,
 
-    cognitiveLoad: 0,
+    cognitiveLoad:
+      0,
 
-    brainReadiness: 0,
+    brainReadiness:
+      0,
 
-    focus: 0
+    focus:
+      0
 
   };
 
@@ -538,6 +1042,7 @@ function getAverageOfLogs(logs) {
       totals.focus +=
         Number(
           log.scores.focus ||
+          log.focusLevel ||
           0
         );
 
@@ -588,7 +1093,13 @@ function getAverageOfLogs(logs) {
       )
 
   };
+
 }
+
+
+/* =========================
+   WEEKLY SLEEP DEBT
+   ========================= */
 
 
 function calculateWeeklySleepDebt(
@@ -596,7 +1107,8 @@ function calculateWeeklySleepDebt(
   logs
 ) {
 
-  let debt = 0;
+  let debt =
+    0;
 
 
   (logs || [])
@@ -629,6 +1141,7 @@ function calculateWeeklySleepDebt(
   return Number(
     debt.toFixed(1)
   );
+
 }
 
 
@@ -637,17 +1150,14 @@ function calculateWeeklySleepDebt(
    ========================= */
 
 
-function optionScore(
-  value,
-  map,
-  fallback = 50
-) {
+/*
+  The old Physical Wellness
+  score has been removed.
 
-  return (
-    map[value] ??
-    fallback
-  );
-}
+  No weight, height, sex,
+  exercise, breakfast or
+  water variables are used.
+*/
 
 
 function calculateBaselineScores(
@@ -662,7 +1172,12 @@ function calculateBaselineScores(
     );
 
 
-  const sleepHours =
+  /*
+    USUAL SLEEP DURATION
+  */
+
+
+  const usualSleepHours =
     calculateSleepHours(
       answers.sleepTime,
       answers.wakeTime
@@ -672,242 +1187,115 @@ function calculateBaselineScores(
   const durationScore =
     calculateSleepScore(
       age,
-      sleepHours
+      usualSleepHours
     );
 
 
-  const restedScore =
-    optionScore(
-      answers.rested,
-      {
-        "Never": 20,
-        "Rarely": 40,
-        "Sometimes": 60,
-        "Often": 80,
-        "Always": 100
-      }
-    );
+  /*
+    DIFFICULTY FALLING ASLEEP
+  */
 
 
   const fallingAsleepScore =
     optionScore(
       answers.fallAsleepDifficulty,
       {
-        "Never": 100,
-        "Rarely": 85,
-        "Sometimes": 65,
-        "Often": 40,
-        "Always": 20
+
+        "Never":
+          100,
+
+        "Rarely":
+          85,
+
+        "Sometimes":
+          65,
+
+        "Often":
+          40,
+
+        "Always":
+          20
+
       }
     );
 
 
-  const screenSleepScore =
-    optionScore(
-      answers.screenUseBeforeSleep,
-      {
-        "Less than 1 hour": 100,
-        "1 to 2 hours": 80,
-        "2 to 3 hours": 55,
-        "More than 3 hours": 30
-      }
-    );
+  /*
+    BASELINE SLEEP
+  */
 
 
   const sleep =
     clamp100(
 
       durationScore *
-      0.40 +
-
-      restedScore *
-      0.25 +
+      0.70 +
 
       fallingAsleepScore *
-      0.20 +
-
-      screenSleepScore *
-      0.15
-
-    );
-
-
-  const stressNumber =
-    Number(
-      answers.stressLevel ||
-      5
-    );
-
-
-  const directStressScore =
-    clamp100(
-      110 -
-      stressNumber *
-      10
-    );
-
-
-  const fatigueScore =
-    optionScore(
-      answers.daytimeFatigue,
-      {
-        "Never": 100,
-        "Rarely": 85,
-        "Sometimes": 65,
-        "Often": 40,
-        "Always": 20
-      }
-    );
-
-
-  const environmentScore =
-    optionScore(
-      answers.studyEnvironment,
-      {
-        "Very quiet and comfortable": 100,
-        "Mostly quiet with good lighting": 85,
-        "Moderately distracting": 65,
-        "Noisy or poorly lit": 40,
-        "Very distracting": 20
-      }
-    );
-
-
-  const stress =
-    clamp100(
-
-      directStressScore *
-      0.55 +
-
-      fatigueScore *
-      0.25 +
-
-      environmentScore *
-      0.20
-
-    );
-
-
-  const studyHoursScore =
-    optionScore(
-      answers.studyHours,
-      {
-        "Less than 1 hour": 80,
-        "1 to 2 hours": 90,
-        "3 to 4 hours": 100,
-        "5 to 6 hours": 75,
-        "More than 6 hours": 50
-      }
-    );
-
-
-  const breaksScore =
-    optionScore(
-      answers.studyBreaks,
-      {
-        "Almost never": 30,
-        "Every 2+ hours": 50,
-        "Every 60 to 90 minutes": 80,
-        "Every 30 to 60 minutes": 100,
-        "Very frequently": 75
-      }
-    );
-
-
-  const cognitive =
-    clamp100(
-
-      studyHoursScore *
-      0.35 +
-
-      breaksScore *
-      0.30 +
-
-      fatigueScore *
-      0.20 +
-
-      environmentScore *
-      0.15
-
-    );
-
-
-  const exerciseScore =
-    optionScore(
-      answers.exerciseFrequency,
-      {
-        "Never": 30,
-        "1 time per week": 50,
-        "2 to 3 times per week": 80,
-        "4 to 5 times per week": 100,
-        "Daily": 90
-      }
-    );
-
-
-  const breakfastScore =
-    optionScore(
-      answers.breakfastHabits,
-      {
-        "I never eat breakfast": 40,
-        "I rarely eat breakfast": 55,
-        "I eat breakfast sometimes": 70,
-        "I usually eat breakfast": 90,
-        "I always eat breakfast": 100
-      }
-    );
-
-
-  const waterScore =
-    optionScore(
-      answers.waterIntake,
-      {
-        "Less than 1 liter": 40,
-        "1 to 2 liters": 70,
-        "2 to 3 liters": 100,
-        "More than 3 liters": 85
-      }
-    );
-
-
-  const physical =
-    clamp100(
-
-      exerciseScore *
-      0.45 +
-
-      breakfastScore *
-      0.25 +
-
-      waterScore *
       0.30
 
     );
 
 
   /*
-    Baseline weights from
-    the Neurovia specification:
-    Sleep 35%
-    Stress 30%
-    Cognitive Load 25%
-    Physical Wellness 10%
+    USUAL COGNITIVE DEMAND
+
+    This does NOT mean that
+    demanding work is inherently
+    unhealthy.
+
+    It gives Neurovia context
+    about the user's normal
+    cognitive schedule.
   */
 
-  const overall =
+
+  const demandLoad =
+    optionScore(
+      answers.mentalDemandHours,
+      {
+
+        "Less than 1 hour":
+          20,
+
+        "1 to 2 hours":
+          35,
+
+        "3 to 4 hours":
+          55,
+
+        "5 to 6 hours":
+          75,
+
+        "More than 6 hours":
+          95
+
+      },
+      50
+    );
+
+
+  /*
+    ROUTINE BALANCE
+
+    This replaces the old
+    Overall Baseline that mixed
+    unrelated Physical Wellness
+    variables.
+  */
+
+
+  const routineBalance =
     clamp100(
 
       sleep *
-      0.35 +
+      0.70 +
 
-      stress *
-      0.30 +
-
-      cognitive *
-      0.25 +
-
-      physical *
-      0.10
+      (
+        100 -
+        demandLoad
+      ) *
+      0.30
 
     );
 
@@ -916,17 +1304,522 @@ function calculateBaselineScores(
 
     sleep,
 
-    stress,
+    usualSleepHours,
 
-    cognitive,
+    fallingAsleepScore,
 
-    physical,
+    demandLoad,
 
-    overall,
+    routineBalance,
+
+    overall:
+      routineBalance,
 
     createdAt:
       new Date()
         .toISOString()
 
   };
+
+}
+
+
+/* =========================
+   PERSONAL PATTERNS
+   ========================= */
+
+
+/*
+  This section is important.
+
+  These functions let Neurovia
+  USE the new Daily questions
+  longitudinally instead of
+  simply collecting them.
+*/
+
+
+function getRecentDailyLogs(
+  user,
+  limit = 30
+) {
+
+  return Object
+    .keys(
+      user?.dailyLogs ||
+      {}
+    )
+    .sort()
+    .slice(
+      -limit
+    )
+    .map(
+      date => ({
+
+        date,
+
+        log:
+          user.dailyLogs[
+            date
+          ]
+
+      })
+    );
+
+}
+
+
+/*
+  PERSONAL PATTERN ENGINE
+
+  Minimum:
+  3 observations in each
+  comparison group.
+
+  This avoids making claims
+  based on one isolated day.
+*/
+
+
+function buildPersonalDailyPatterns(
+  user,
+  limit = 30
+) {
+
+  const items =
+    getRecentDailyLogs(
+      user,
+      limit
+    );
+
+
+  const result = {
+
+    sampleSize:
+      items.length,
+
+    screenSleep:
+      null,
+
+    distractionFocus:
+      null,
+
+    breaksLoad:
+      null,
+
+    sleepEnergy:
+      null
+
+  };
+
+
+  /* =====================
+     SCREEN ↔ SLEEP
+     ===================== */
+
+
+  const lowScreen =
+    items.filter(
+      item => {
+
+        const minutes =
+          Number(
+            item.log
+              ?.scores
+              ?.screenBeforeSleepMinutes
+          );
+
+
+        return (
+          Number.isFinite(minutes) &&
+          minutes <= 15
+        );
+
+      }
+    );
+
+
+  const highScreen =
+    items.filter(
+      item => {
+
+        const minutes =
+          Number(
+            item.log
+              ?.scores
+              ?.screenBeforeSleepMinutes
+          );
+
+
+        return (
+          Number.isFinite(minutes) &&
+          minutes >= 30
+        );
+
+      }
+    );
+
+
+  if (
+    lowScreen.length >= 3 &&
+    highScreen.length >= 3
+  ) {
+
+    const low =
+      averageNumbers(
+        lowScreen.map(
+          item =>
+            item.log.sleepQuality
+        )
+      );
+
+
+    const high =
+      averageNumbers(
+        highScreen.map(
+          item =>
+            item.log.sleepQuality
+        )
+      );
+
+
+    result.screenSleep = {
+
+      lowScreenCount:
+        lowScreen.length,
+
+      highScreenCount:
+        highScreen.length,
+
+      lowScreenSleepQuality:
+        Number(
+          low.toFixed(1)
+        ),
+
+      highScreenSleepQuality:
+        Number(
+          high.toFixed(1)
+        ),
+
+      difference:
+        Number(
+          (
+            low -
+            high
+          ).toFixed(1)
+        )
+
+    };
+
+  }
+
+
+  /* =====================
+     DISTRACTION ↔ FOCUS
+     ===================== */
+
+
+  const lowDistraction =
+    items.filter(
+      item =>
+
+        Number(
+          item.log
+            ?.distractionLevel
+        ) <= 2
+
+    );
+
+
+  const highDistraction =
+    items.filter(
+      item =>
+
+        Number(
+          item.log
+            ?.distractionLevel
+        ) >= 4
+
+    );
+
+
+  if (
+    lowDistraction.length >= 3 &&
+    highDistraction.length >= 3
+  ) {
+
+    const low =
+      averageNumbers(
+        lowDistraction.map(
+          item =>
+            item.log.focusLevel
+        )
+      );
+
+
+    const high =
+      averageNumbers(
+        highDistraction.map(
+          item =>
+            item.log.focusLevel
+        )
+      );
+
+
+    result.distractionFocus = {
+
+      lowDistractionCount:
+        lowDistraction.length,
+
+      highDistractionCount:
+        highDistraction.length,
+
+      lowDistractionFocus:
+        Number(
+          low.toFixed(1)
+        ),
+
+      highDistractionFocus:
+        Number(
+          high.toFixed(1)
+        ),
+
+      difference:
+        Number(
+          (
+            low -
+            high
+          ).toFixed(1)
+        )
+
+    };
+
+  }
+
+
+  /* =====================
+     BREAKS ↔ LOAD
+     ===================== */
+
+
+  const weakBreaks =
+    items.filter(
+      item =>
+
+        [
+          "None",
+          "Few"
+        ].includes(
+          item.log
+            ?.breaksLevel
+        )
+
+    );
+
+
+  const goodBreaks =
+    items.filter(
+      item =>
+
+        [
+          "Some",
+          "Enough"
+        ].includes(
+          item.log
+            ?.breaksLevel
+        )
+
+    );
+
+
+  if (
+    weakBreaks.length >= 3 &&
+    goodBreaks.length >= 3
+  ) {
+
+    const weak =
+      averageNumbers(
+        weakBreaks.map(
+          item =>
+            item.log
+              ?.scores
+              ?.cognitiveLoad
+        )
+      );
+
+
+    const good =
+      averageNumbers(
+        goodBreaks.map(
+          item =>
+            item.log
+              ?.scores
+              ?.cognitiveLoad
+        )
+      );
+
+
+    result.breaksLoad = {
+
+      weakBreaksCount:
+        weakBreaks.length,
+
+      goodBreaksCount:
+        goodBreaks.length,
+
+      weakBreaksLoad:
+        Math.round(
+          weak
+        ),
+
+      goodBreaksLoad:
+        Math.round(
+          good
+        ),
+
+      difference:
+        Math.round(
+          weak -
+          good
+        )
+
+    };
+
+  }
+
+
+  /* =====================
+     SLEEP ↔ ENERGY
+     ===================== */
+
+
+  const range =
+    recommendedSleepRange(
+      user?.profile?.age ||
+      18
+    );
+
+
+  const enoughSleep =
+    items.filter(
+      item =>
+
+        Number(
+          item.log
+            ?.scores
+            ?.sleepHours
+        ) >=
+        range.min
+
+    );
+
+
+  const shortSleep =
+    items.filter(
+      item =>
+
+        Number(
+          item.log
+            ?.scores
+            ?.sleepHours
+        ) <
+        range.min
+
+    );
+
+
+  if (
+    enoughSleep.length >= 3 &&
+    shortSleep.length >= 3
+  ) {
+
+    const enough =
+      averageNumbers(
+        enoughSleep.map(
+          item =>
+            item.log.energyLevel
+        )
+      );
+
+
+    const short =
+      averageNumbers(
+        shortSleep.map(
+          item =>
+            item.log.energyLevel
+        )
+      );
+
+
+    result.sleepEnergy = {
+
+      enoughSleepCount:
+        enoughSleep.length,
+
+      shortSleepCount:
+        shortSleep.length,
+
+      enoughSleepEnergy:
+        Number(
+          enough.toFixed(1)
+        ),
+
+      shortSleepEnergy:
+        Number(
+          short.toFixed(1)
+        ),
+
+      difference:
+        Number(
+          (
+            enough -
+            short
+          ).toFixed(1)
+        )
+
+    };
+
+  }
+
+
+  return result;
+
+}
+
+
+/* =========================
+   BASELINE CONTEXT
+   ========================= */
+
+
+function getBaselineContext(
+  user
+) {
+
+  const answers =
+    user?.baseline?.answers ||
+    user?.onboardingAnswers ||
+    {};
+
+
+  return {
+
+    usualSleepTime:
+      answers.sleepTime ||
+      null,
+
+    usualWakeTime:
+      answers.wakeTime ||
+      null,
+
+    fallAsleepDifficulty:
+      answers.fallAsleepDifficulty ||
+      null,
+
+    mentalDemandHours:
+      answers.mentalDemandHours ||
+      null
+
+  };
+
 }
