@@ -2661,7 +2661,7 @@ document.addEventListener(
               <div class="card">
 
                 <p class="muted">
-                  WEEKDAY PATTERN
+                  RECURRING WEEKLY PATTERN
                 </p>
 
                 <h2>
@@ -3118,14 +3118,6 @@ function renderCalendar() {
 
               <option value="daily">
                 Every day
-              </option>
-
-              <option value="weekdays">
-                Every weekday
-              </option>
-
-              <option value="weekly">
-                Every week
               </option>
 
               <option value="custom">
