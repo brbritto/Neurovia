@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -34,10 +35,15 @@
 
   <main class="screen-container">
 
+
     <div
       class="hero-card"
-      style="max-width:520px;margin:0 auto;"
+      style="
+        max-width:520px;
+        margin:0 auto;
+      "
     >
+
 
       <p class="muted">
         DAILY CHECK-IN
@@ -50,13 +56,22 @@
 
 
       <p class="section-subtitle">
-        A quick check-in helps Neurovia estimate
-        cognitive load, recovery, sleep debt and
-        Brain Readiness.
+
+        Track the signals that change from
+        day to day.
+
+        Neurovia uses them to estimate
+        Brain Readiness, Recovery and
+        Cognitive Load and to build
+        personal patterns over time.
+
       </p>
 
 
       <form id="dailyUpdateForm">
+
+
+        <!-- SLEEP TIME -->
 
 
         <div class="input-row">
@@ -65,9 +80,13 @@
             What time did you fall asleep?
           </label>
 
+
           <div class="input-box">
 
-            <i class="mdi mdi-weather-night"></i>
+            <i
+              class="mdi mdi-weather-night"
+            ></i>
+
 
             <input
               id="sleepTime"
@@ -80,15 +99,22 @@
         </div>
 
 
+        <!-- WAKE TIME -->
+
+
         <div class="input-row">
 
           <label>
             What time did you wake up?
           </label>
 
+
           <div class="input-box">
 
-            <i class="mdi mdi-weather-sunset-up"></i>
+            <i
+              class="mdi mdi-weather-sunset-up"
+            ></i>
+
 
             <input
               id="wakeTime"
@@ -101,15 +127,22 @@
         </div>
 
 
+        <!-- SLEEP QUALITY -->
+
+
         <div class="input-row">
 
           <label>
             How was your sleep quality?
           </label>
 
+
           <div class="input-box">
 
-            <i class="mdi mdi-bed-outline"></i>
+            <i
+              class="mdi mdi-bed-outline"
+            ></i>
+
 
             <select
               id="sleepQuality"
@@ -153,15 +186,137 @@
         </div>
 
 
+        <!-- RESTED -->
+
+
+        <div class="input-row">
+
+          <label>
+            How rested did you feel when you woke up?
+          </label>
+
+
+          <div class="input-box">
+
+            <i
+              class="mdi mdi-weather-sunny"
+            ></i>
+
+
+            <select
+              id="restedLevel"
+              required
+            >
+
+              <option value="">
+                Select 1–10
+              </option>
+
+              <option value="1">
+                1 — Not rested at all
+              </option>
+
+              <option value="2">2</option>
+
+              <option value="3">3</option>
+
+              <option value="4">4</option>
+
+              <option value="5">
+                5 — Moderate
+              </option>
+
+              <option value="6">6</option>
+
+              <option value="7">7</option>
+
+              <option value="8">8</option>
+
+              <option value="9">9</option>
+
+              <option value="10">
+                10 — Fully rested
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- SCREEN BEFORE SLEEP -->
+
+
+        <div class="input-row">
+
+          <label>
+
+            How much screen time did you have
+            during the hour before sleep?
+
+          </label>
+
+
+          <div class="input-box">
+
+            <i
+              class="mdi mdi-cellphone"
+            ></i>
+
+
+            <select
+              id="screenBeforeSleep"
+              required
+            >
+
+              <option value="">
+                Select
+              </option>
+
+              <option value="None">
+                None
+              </option>
+
+              <option value="Less than 15 min">
+                Less than 15 min
+              </option>
+
+              <option value="15 to 30 min">
+                15 to 30 min
+              </option>
+
+              <option value="30 to 45 min">
+                30 to 45 min
+              </option>
+
+              <option value="More than 45 min">
+                More than 45 min
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- STRESS -->
+
+
         <div class="input-row">
 
           <label>
             How stressed do you feel today?
           </label>
 
+
           <div class="input-box">
 
-            <i class="mdi mdi-brain"></i>
+            <i
+              class="mdi mdi-brain"
+            ></i>
+
 
             <select
               id="stressLevel"
@@ -177,7 +332,9 @@
               </option>
 
               <option value="2">2</option>
+
               <option value="3">3</option>
+
               <option value="4">4</option>
 
               <option value="5">
@@ -185,8 +342,11 @@
               </option>
 
               <option value="6">6</option>
+
               <option value="7">7</option>
+
               <option value="8">8</option>
+
               <option value="9">9</option>
 
               <option value="10">
@@ -200,15 +360,22 @@
         </div>
 
 
+        <!-- ENERGY -->
+
+
         <div class="input-row">
 
           <label>
             How is your energy today?
           </label>
 
+
           <div class="input-box">
 
-            <i class="mdi mdi-lightning-bolt-outline"></i>
+            <i
+              class="mdi mdi-lightning-bolt-outline"
+            ></i>
+
 
             <select
               id="energyLevel"
@@ -224,7 +391,9 @@
               </option>
 
               <option value="2">2</option>
+
               <option value="3">3</option>
+
               <option value="4">4</option>
 
               <option value="5">
@@ -232,8 +401,11 @@
               </option>
 
               <option value="6">6</option>
+
               <option value="7">7</option>
+
               <option value="8">8</option>
+
               <option value="9">9</option>
 
               <option value="10">
@@ -247,15 +419,22 @@
         </div>
 
 
+        <!-- MENTAL DEMAND -->
+
+
         <div class="input-row">
 
           <label>
-            How mentally demanding is your day?
+            How mentally demanding was your day?
           </label>
+
 
           <div class="input-box">
 
-            <i class="mdi mdi-chart-timeline-variant"></i>
+            <i
+              class="mdi mdi-chart-timeline-variant"
+            ></i>
+
 
             <select
               id="workloadLevel"
@@ -271,7 +450,9 @@
               </option>
 
               <option value="2">2</option>
+
               <option value="3">3</option>
+
               <option value="4">4</option>
 
               <option value="5">
@@ -279,8 +460,11 @@
               </option>
 
               <option value="6">6</option>
+
               <option value="7">7</option>
+
               <option value="8">8</option>
+
               <option value="9">9</option>
 
               <option value="10">
@@ -294,15 +478,127 @@
         </div>
 
 
+        <!-- DISTRACTION -->
+
+
         <div class="input-row">
 
           <label>
-            How well can you focus today?
+            How distracting was your environment?
           </label>
+
 
           <div class="input-box">
 
-            <i class="mdi mdi-crosshairs-gps"></i>
+            <i
+              class="mdi mdi-eye-off-outline"
+            ></i>
+
+
+            <select
+              id="distractionLevel"
+              required
+            >
+
+              <option value="">
+                Select 1–5
+              </option>
+
+              <option value="1">
+                1 — Very focused environment
+              </option>
+
+              <option value="2">
+                2 — Slightly distracting
+              </option>
+
+              <option value="3">
+                3 — Moderately distracting
+              </option>
+
+              <option value="4">
+                4 — Very distracting
+              </option>
+
+              <option value="5">
+                5 — Extremely distracting
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- BREAKS -->
+
+
+        <div class="input-row">
+
+          <label>
+
+            Did you take real breaks between
+            demanding activities today?
+
+          </label>
+
+
+          <div class="input-box">
+
+            <i
+              class="mdi mdi-coffee-outline"
+            ></i>
+
+
+            <select
+              id="breaksLevel"
+              required
+            >
+
+              <option value="">
+                Select
+              </option>
+
+              <option value="None">
+                None
+              </option>
+
+              <option value="Few">
+                Few
+              </option>
+
+              <option value="Some">
+                Some
+              </option>
+
+              <option value="Enough">
+                Enough
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- FOCUS -->
+
+
+        <div class="input-row">
+
+          <label>
+            How well could you focus today?
+          </label>
+
+
+          <div class="input-box">
+
+            <i
+              class="mdi mdi-crosshairs-gps"
+            ></i>
+
 
             <select
               id="focusLevel"
@@ -314,11 +610,13 @@
               </option>
 
               <option value="1">
-                1 — Cannot focus
+                1 — Could not focus
               </option>
 
               <option value="2">2</option>
+
               <option value="3">3</option>
+
               <option value="4">4</option>
 
               <option value="5">
@@ -326,8 +624,11 @@
               </option>
 
               <option value="6">6</option>
+
               <option value="7">7</option>
+
               <option value="8">8</option>
+
               <option value="9">9</option>
 
               <option value="10">
@@ -353,7 +654,10 @@
           class="secondary-btn"
           type="button"
           style="margin-top:10px;"
-          onclick="window.location.href='dashboard.html'"
+          onclick="
+            window.location.href =
+            'dashboard.html'
+          "
         >
           Back
         </button>
@@ -364,18 +668,31 @@
           class="message-text"
         ></p>
 
+
       </form>
 
+
     </div>
+
 
   </main>
 
 
-  <script src="js/storage.js"></script>
+  <script
+    src="js/storage.js"
+  ></script>
 
-  <script src="js/scoring.js"></script>
 
-  <script src="js/daily-update.js"></script>
+  <script
+    src="js/scoring.js"
+  ></script>
+
+
+  <script
+    src="js/daily-update.js"
+  ></script>
+
 
 </body>
+
 </html>
