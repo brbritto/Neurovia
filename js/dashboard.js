@@ -516,22 +516,86 @@ document.addEventListener(
     }
 
 
-    /*
+        /*
       ==================================
       IMPROVEMENT
       ==================================
     */
 
-    function getLast30LoggedDays() {
+
+    function getRolling30DayItems() {
+
+      const end =
+        dateFromKey(
+          todayKey()
+        );
+
+
+      if (!end) {
+        return [];
+      }
+
+
+      end.setHours(
+        12,
+        0,
+        0,
+        0
+      );
+
+
+      const start =
+        new Date(
+          end
+        );
+
+
+      start.setDate(
+        end.getDate() -
+        29
+      );
+
+
       return getDates()
-        .slice(-30)
+        .filter(
+          key => {
+
+            const date =
+              dateFromKey(
+                key
+              );
+
+
+            if (!date) {
+              return false;
+            }
+
+
+            date.setHours(
+              12,
+              0,
+              0,
+              0
+            );
+
+
+            return (
+              date >= start &&
+              date <= end
+            );
+
+          }
+        )
         .map(
           date => ({
             date,
             log:
-              user.dailyLogs[date]
+              user.dailyLogs[
+                date
+              ]
           })
         );
+
     }
 
 
@@ -539,50 +603,100 @@ document.addEventListener(
       item,
       metric
     ) {
+
       const log =
-        item.log || {};
+        item?.log ||
+        {};
+
 
       const scores =
-        log.scores || {};
+        log.scores ||
+        {};
+
 
       if (
         metric ===
         "readiness"
       ) {
-        return Number(
-          scores.brainReadiness ??
-          scores.overall
-        );
+
+        const value =
+          Number(
+            scores.brainReadiness ??
+            scores.overall
+          );
+
+
+        return Number.isFinite(
+          value
+        )
+          ? value
+          : null;
+
       }
+
 
       if (
         metric ===
         "recovery"
       ) {
-        return Number(
-          scores.recovery
-        );
+
+        const value =
+          Number(
+            scores.recovery
+          );
+
+
+        return Number.isFinite(
+          value
+        )
+          ? value
+          : null;
+
       }
+
 
       if (
         metric ===
         "cognitiveLoad"
       ) {
-        return Number(
-          scores.cognitiveLoad
-        );
+
+        const value =
+          Number(
+            scores.cognitiveLoad
+          );
+
+
+        return Number.isFinite(
+          value
+        )
+          ? value
+          : null;
+
       }
+
 
       if (
         metric ===
         "focus"
       ) {
-        return Number(
-          log.focusLevel
-        ) * 10;
+
+        const value =
+          Number(
+            log.focusLevel
+          );
+
+
+        return Number.isFinite(
+          value
+        )
+          ? value * 10
+          : null;
+
       }
 
+
       return null;
+
     }
 
 
@@ -591,30 +705,54 @@ document.addEventListener(
       metric,
       inverse = false
     ) {
+
+      const valid =
+        items.filter(
+          item =>
+            Number.isFinite(
+              getMetricValue(
+                item,
+                metric
+              )
+            )
+        );
+
+
       if (
-        items.length < 4
+        valid.length <
+        4
       ) {
+
         return {
-          direction: "learning",
-          difference: 0
+          direction:
+            "learning",
+
+          difference:
+            0
         };
+
       }
+
 
       const split =
         Math.floor(
-          items.length / 2
+          valid.length /
+          2
         );
 
+
       const first =
-        items.slice(
+        valid.slice(
           0,
           split
         );
 
+
       const second =
-        items.slice(
+        valid.slice(
           split
         );
+
 
       const firstAvg =
         average(
@@ -627,6 +765,7 @@ document.addEventListener(
           )
         );
 
+
       const secondAvg =
         average(
           second.map(
@@ -638,125 +777,224 @@ document.addEventListener(
           )
         );
 
+
       if (
         firstAvg === null ||
         secondAvg === null
       ) {
+
         return {
-          direction: "learning",
-          difference: 0
+          direction:
+            "learning",
+
+          difference:
+            0
         };
+
       }
+
 
       const raw =
         secondAvg -
         firstAvg;
 
-      const difference =
+
+      const adjusted =
         inverse
           ? -raw
           : raw;
 
-      if (difference >= 5) {
+
+      if (
+        adjusted >= 5
+      ) {
+
         return {
-          direction: "improving",
+          direction:
+            "improving",
+
           difference:
             Math.round(
-              Math.abs(raw)
+              Math.abs(
+                raw
+              )
             )
         };
+
       }
 
-      if (difference <= -5) {
+
+      if (
+        adjusted <= -5
+      ) {
+
         return {
-          direction: "declining",
+          direction:
+            "declining",
+
           difference:
             Math.round(
-              Math.abs(raw)
+              Math.abs(
+                raw
+              )
             )
         };
+
       }
+
 
       return {
-        direction: "stable",
+        direction:
+          "stable",
+
         difference:
           Math.round(
-            Math.abs(raw)
+            Math.abs(
+              raw
+            )
           )
       };
+
     }
 
 
     function getWeekdayAnalysis(
       items
     ) {
-      const groups = {};
 
-      items.forEach(item => {
-        const date =
-          dateFromKey(
-            item.date
-          );
+      const groups =
+        {};
 
-        if (!date) {
-          return;
-        }
 
-        const day =
-          date.toLocaleDateString(
-            "en-US",
-            {
-              weekday: "long"
-            }
-          );
+      items.forEach(
+        item => {
 
-        if (!groups[day]) {
-          groups[day] = [];
-        }
+          const date =
+            dateFromKey(
+              item.date
+            );
 
-        const scores =
-          item.log.scores || {};
 
-        const load =
-          Number(
-            scores.cognitiveLoad
-          );
+          if (!date) {
+            return;
+          }
 
-        if (
-          Number.isFinite(load)
-        ) {
-          groups[day].push(
+
+          const load =
+            Number(
+              item.log
+                ?.scores
+                ?.cognitiveLoad
+            );
+
+
+          if (
+            !Number.isFinite(
+              load
+            )
+          ) {
+            return;
+          }
+
+
+          const day =
+            date.toLocaleDateString(
+              "en-US",
+              {
+                weekday:
+                  "long"
+              }
+            );
+
+
+          if (
+            !groups[
+              day
+            ]
+          ) {
+
+            groups[
+              day
+            ] = [];
+
+          }
+
+
+          groups[
+            day
+          ].push(
             load
           );
+
         }
-      });
+      );
+
+
+      /*
+        A weekday only becomes a
+        pattern after at least
+        3 observations.
+
+        One difficult Monday should
+        not make Neurovia claim that
+        Mondays are difficult.
+      */
 
 
       return Object
-        .entries(groups)
+        .entries(
+          groups
+        )
         .map(
-          ([day, values]) => ({
+          (
+            [
+              day,
+              values
+            ]
+          ) => ({
+
             day,
+
             value:
               Math.round(
-                average(values) || 0
+                average(
+                  values
+                ) ||
+                0
               ),
+
             count:
               values.length
+
           })
         )
+        .filter(
+          item =>
+            item.count >=
+            3
+        )
         .sort(
-          (a, b) =>
-            b.value - a.value
+          (
+            a,
+            b
+          ) =>
+            b.value -
+            a.value
         );
+
     }
 
 
     function buildImprovementPriority(
       items
     ) {
-      if (!items.length) {
+
+      if (
+        !items.length
+      ) {
+
         return {
+
           title:
             "Start building your pattern",
 
@@ -764,11 +1002,17 @@ document.addEventListener(
             "Complete Daily Check-Ins so Neurovia can identify recurring areas for improvement.",
 
           steps: [
+
             "Complete today's check-in.",
+
             "Keep your entries consistent.",
+
             "Return after several logged days to compare patterns."
+
           ]
+
         };
+
       }
 
 
@@ -784,6 +1028,7 @@ document.addEventListener(
           )
         );
 
+
       const avgStress =
         average(
           items.map(
@@ -794,6 +1039,7 @@ document.addEventListener(
               )
           )
         );
+
 
       const avgEnergy =
         average(
@@ -806,6 +1052,7 @@ document.addEventListener(
           )
         );
 
+
       const avgFocus =
         average(
           items.map(
@@ -816,6 +1063,7 @@ document.addEventListener(
               )
           )
         );
+
 
       const avgLoad =
         average(
@@ -831,199 +1079,425 @@ document.addEventListener(
 
 
       const priorities = [
+
         {
-          key: "sleep",
+          key:
+            "sleep",
+
           score:
             avgSleep === null
               ? -1
               : Math.max(
                   0,
-                  (8 - avgSleep) *
+                  (
+                    8 -
+                    avgSleep
+                  ) *
                   12
                 )
         },
 
         {
-          key: "stress",
+          key:
+            "stress",
+
           score:
             avgStress === null
               ? -1
-              : avgStress * 8
+              : avgStress *
+                8
         },
 
         {
-          key: "energy",
+          key:
+            "energy",
+
           score:
             avgEnergy === null
               ? -1
-              : (10 - avgEnergy) * 8
+              : (
+                  10 -
+                  avgEnergy
+                ) *
+                8
         },
 
         {
-          key: "focus",
+          key:
+            "focus",
+
           score:
             avgFocus === null
               ? -1
-              : (10 - avgFocus) * 8
+              : (
+                  10 -
+                  avgFocus
+                ) *
+                8
         },
 
         {
-          key: "load",
+          key:
+            "load",
+
           score:
             avgLoad === null
               ? -1
               : avgLoad
         }
+
       ]
         .sort(
-          (a, b) =>
-            b.score - a.score
+          (
+            a,
+            b
+          ) =>
+            b.score -
+            a.score
         );
 
 
       const main =
-        priorities[0]?.key;
+        priorities[
+          0
+        ]?.key;
 
 
-      if (main === "sleep") {
+      if (
+        main ===
+        "sleep"
+      ) {
+
         return {
+
           title:
             "Protect a more consistent sleep window",
 
           text:
-            "Short or inconsistent sleep is one of the strongest recurring signals in your recent data. The goal is not simply to 'sleep more' tonight, but to make enough sleep easier to repeat.",
+            "Short or inconsistent sleep is one of the stronger recurring signals in your recent data. The goal is to make enough sleep easier to repeat.",
 
           steps: [
-            "Choose a realistic target bedtime and keep it within roughly the same window across the week.",
-            "Move optional work and stimulating screen use away from the final part of your evening.",
-            "Prepare tomorrow's essentials earlier so bedtime is not delayed by small unfinished tasks.",
-            "Use a short wind-down routine that you can repeat instead of relying on motivation at the end of the day."
+
+            "Choose a realistic target bedtime and keep it within a similar window across the week.",
+
+            "Protect enough time for sleep before demanding days.",
+
+            "Prepare tomorrow's essentials earlier so small unfinished tasks do not repeatedly delay sleep.",
+
+            "Use your personal patterns below to see which evening behaviors are associated with better sleep for you."
+
           ]
+
         };
+
       }
 
 
-      if (main === "stress") {
+      if (
+        main ===
+        "stress"
+      ) {
+
         return {
+
           title:
             "Reduce repeated stress accumulation",
 
           text:
-            "Stress is recurring strongly across your recent check-ins. Focus on changing how demands are distributed instead of waiting until the end of a difficult day to recover.",
+            "Stress is recurring strongly across your recent check-ins. Focus on how demands are distributed across the day instead of relying only on recovery after a difficult day.",
 
           steps: [
-            "Identify the one or two tasks that actually need your highest attention each day.",
-            "Avoid stacking multiple high-demand activities without a real break.",
+
+            "Identify the tasks that actually require your highest attention.",
+
+            "Avoid stacking several demanding activities without a real break.",
+
             "Use the Brain Calendar to move flexible work away from already demanding periods.",
-            "Protect a lower-stimulation transition before sleep on high-stress days."
+
+            "Compare your stress with your Cognitive Load across several days."
+
           ]
+
         };
+
       }
 
 
-      if (main === "energy") {
+      if (
+        main ===
+        "energy"
+      ) {
+
         return {
+
           title:
             "Build more recovery into demanding days",
 
           text:
-            "Low energy is recurring in your recent pattern. Instead of treating recovery as something that happens only after all work is finished, place recovery periods inside demanding days.",
+            "Low energy is recurring in your recent data. Look at whether it appears together with shorter sleep, high Cognitive Load or insufficient breaks.",
 
           steps: [
+
             "Leave a real gap between longer demanding activities.",
-            "Keep physical activity in the schedule when it usually helps you recover.",
-            "Avoid filling every break with another task.",
-            "Protect your sleep opportunity when several low-energy days occur together."
+
+            "Avoid filling every break with another demanding task.",
+
+            "Protect your sleep opportunity when several low-energy days occur together.",
+
+            "Check your personal Sleep ↔ Energy pattern below as more data becomes available."
+
           ]
+
         };
+
       }
 
 
-      if (main === "focus") {
+      if (
+        main ===
+        "focus"
+      ) {
+
         return {
+
           title:
-            "Protect your attention from repeated switching",
+            "Protect your attention from repeated disruption",
 
           text:
-            "Focus is one of the weaker recurring signals in your recent data. The most useful change is to make focused work easier to sustain, not simply to try harder.",
+            "Focus is one of the weaker recurring signals in your recent data. Neurovia can compare it with how distracting your environment was.",
 
           steps: [
-            "Choose one defined task before beginning a work block.",
-            "Remove avoidable notifications and task switching during that block.",
+
+            "Choose one defined task before beginning a focused work block.",
+
+            "Reduce avoidable interruptions during that block.",
+
             "Separate demanding blocks with a real break.",
-            "Place your most important focused work at times when your energy is usually stronger."
+
+            "Use the Distraction ↔ Focus pattern below to see whether the relationship repeats in your own data."
+
           ]
+
         };
+
       }
 
 
       return {
+
         title:
           "Spread cognitive demand more evenly",
 
         text:
-          "Cognitive Load is the strongest recurring strain signal in your recent data. The Brain Calendar can help you avoid concentrating too much demanding work into the same period.",
+          "Cognitive Load is the strongest recurring strain signal in your recent data. Use your Brain Calendar and break patterns to reduce unnecessary clustering.",
 
         steps: [
-          "Move flexible assignments away from exam-heavy periods when possible.",
+
+          "Move flexible tasks away from already demanding periods when possible.",
+
           "Leave longer gaps between high-demand activities.",
-          "Start larger study tasks earlier instead of compressing them into one day.",
-          "Use lighter activities between demanding work blocks."
+
+          "Start larger tasks earlier instead of compressing them into one day.",
+
+          "Compare days with fewer breaks against days with enough breaks."
+
         ]
+
       };
+
     }
 
 
-    function buildChartSVG(
+    /*
+      ==================================
+      7-DAY READINESS AVERAGE
+      ==================================
+
+      This is a calendar-day average.
+
+      Missing days are ignored.
+      They are NOT converted to zero.
+    */
+
+
+    function buildSevenDayReadinessAverage(
       items
     ) {
+
+      return items.map(
+        item => {
+
+          const currentDate =
+            dateFromKey(
+              item.date
+            );
+
+
+          if (!currentDate) {
+
+            return {
+              date:
+                item.date,
+
+              value:
+                null
+            };
+
+          }
+
+
+          currentDate.setHours(
+            12,
+            0,
+            0,
+            0
+          );
+
+
+          const windowStart =
+            new Date(
+              currentDate
+            );
+
+
+          windowStart.setDate(
+            currentDate.getDate() -
+            6
+          );
+
+
+          const values =
+            items
+              .filter(
+                candidate => {
+
+                  const date =
+                    dateFromKey(
+                      candidate.date
+                    );
+
+
+                  if (!date) {
+                    return false;
+                  }
+
+
+                  date.setHours(
+                    12,
+                    0,
+                    0,
+                    0
+                  );
+
+
+                  return (
+                    date >=
+                      windowStart &&
+                    date <=
+                      currentDate
+                  );
+
+                }
+              )
+              .map(
+                candidate =>
+                  getMetricValue(
+                    candidate,
+                    "readiness"
+                  )
+              )
+              .filter(
+                Number.isFinite
+              );
+
+
+          return {
+
+            date:
+              item.date,
+
+            value:
+              values.length
+                ? average(
+                    values
+                  )
+                : null
+
+          };
+
+        }
+      );
+
+    }
+
+
+    /*
+      ==================================
+      SIMPLIFIED READINESS GRAPH
+      ==================================
+    */
+
+
+    function buildReadinessChartSVG(
+      items
+    ) {
+
+      const valid =
+        items.filter(
+          item =>
+            Number.isFinite(
+              getMetricValue(
+                item,
+                "readiness"
+              )
+            )
+        );
+
+
       if (
-        items.length < 2
+        valid.length <
+        2
       ) {
+
         return `
           <div class="chart-empty">
             Add at least two Daily Check-Ins
-            to start the 30-day graph.
+            to start your Brain Readiness graph.
           </div>
         `;
+
       }
 
 
-      const metrics = [
-        {
-          key: "readiness",
-          label: "Readiness",
-          className: "chart-readiness"
-        },
-        {
-          key: "recovery",
-          label: "Recovery",
-          className: "chart-recovery"
-        },
-        {
-          key: "cognitiveLoad",
-          label: "Cognitive Load",
-          className: "chart-load"
-        },
-        {
-          key: "focus",
-          label: "Focus",
-          className: "chart-focus"
-        }
-      ];
+      const width =
+        900;
 
 
-      const width = 900;
-      const height = 330;
-      const left = 42;
-      const right = 18;
-      const top = 20;
-      const bottom = 40;
+      const height =
+        330;
+
+
+      const left =
+        42;
+
+
+      const right =
+        18;
+
+
+      const top =
+        20;
+
+
+      const bottom =
+        45;
+
 
       const usableWidth =
         width -
         left -
         right;
+
 
       const usableHeight =
         height -
@@ -1031,142 +1505,366 @@ document.addEventListener(
         bottom;
 
 
-      function x(index) {
-        if (
-          items.length === 1
-        ) {
-          return left;
+      /*
+        X is based on actual calendar
+        position inside the 30-day window.
+
+        Missing check-ins therefore appear
+        as real gaps in time instead of
+        compressing the graph.
+      */
+
+
+      const end =
+        dateFromKey(
+          todayKey()
+        );
+
+
+      end.setHours(
+        12,
+        0,
+        0,
+        0
+      );
+
+
+      const start =
+        new Date(
+          end
+        );
+
+
+      start.setDate(
+        end.getDate() -
+        29
+      );
+
+
+      function dayOffset(
+        dateKey
+      ) {
+
+        const date =
+          dateFromKey(
+            dateKey
+          );
+
+
+        if (!date) {
+          return 0;
         }
+
+
+        date.setHours(
+          12,
+          0,
+          0,
+          0
+        );
+
+
+        return Math.round(
+          (
+            date -
+            start
+          ) /
+          86400000
+        );
+
+      }
+
+
+      function x(
+        dateKey
+      ) {
+
+        const offset =
+          Math.max(
+            0,
+            Math.min(
+              29,
+              dayOffset(
+                dateKey
+              )
+            )
+          );
+
 
         return (
           left +
           (
-            index /
-            (items.length - 1)
+            offset /
+            29
           ) *
           usableWidth
         );
+
       }
 
 
-      function y(value) {
+      function y(
+        value
+      ) {
+
+        const safe =
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Number(
+                value
+              )
+            )
+          );
+
+
         return (
           top +
           (
             1 -
-            Math.max(
-              0,
-              Math.min(
-                100,
-                value
-              )
-            ) /
+            safe /
             100
           ) *
           usableHeight
         );
+
       }
 
 
       const gridLines =
-        [0, 25, 50, 75, 100]
-          .map(value => `
-            <line
-              x1="${left}"
-              x2="${width - right}"
-              y1="${y(value)}"
-              y2="${y(value)}"
-              class="chart-grid-line"
-            ></line>
+        [
+          0,
+          25,
+          50,
+          75,
+          100
+        ]
+          .map(
+            value => `
+              <line
+                x1="${left}"
+                x2="${width - right}"
+                y1="${y(value)}"
+                y2="${y(value)}"
+                class="chart-grid-line"
+              ></line>
 
-            <text
-              x="4"
-              y="${y(value) + 4}"
-              class="chart-axis-text"
-            >
-              ${value}
-            </text>
-          `)
-          .join("");
+              <text
+                x="4"
+                y="${y(value) + 4}"
+                class="chart-axis-text"
+              >
+                ${value}
+              </text>
+            `
+          )
+          .join(
+            ""
+          );
 
 
-      const lines =
-        metrics
-          .map(metric => {
+      /*
+        We use individual segments rather
+        than one polyline.
 
-            const points =
-              items
-                .map(
-                  (item, index) => {
-                    const value =
-                      getMetricValue(
-                        item,
-                        metric.key
-                      );
+        If there is a missing calendar day,
+        the raw Readiness line is broken
+        instead of pretending there was
+        continuous data.
+      */
 
-                    if (
-                      !Number.isFinite(
-                        value
-                      )
-                    ) {
-                      return null;
-                    }
 
-                    return (
-                      `${x(index)},${y(value)}`
-                    );
-                  }
-                )
-                .filter(Boolean)
-                .join(" ");
+      let readinessSegments =
+        "";
 
-            if (!points) {
-              return "";
+
+      for (
+        let i = 1;
+        i < valid.length;
+        i++
+      ) {
+
+        const previous =
+          valid[
+            i - 1
+          ];
+
+
+        const current =
+          valid[
+            i
+          ];
+
+
+        const previousOffset =
+          dayOffset(
+            previous.date
+          );
+
+
+        const currentOffset =
+          dayOffset(
+            current.date
+          );
+
+
+        /*
+          Only connect consecutive
+          calendar days.
+        */
+
+
+        if (
+          currentOffset -
+          previousOffset !==
+          1
+        ) {
+          continue;
+        }
+
+
+        const previousValue =
+          getMetricValue(
+            previous,
+            "readiness"
+          );
+
+
+        const currentValue =
+          getMetricValue(
+            current,
+            "readiness"
+          );
+
+
+        readinessSegments += `
+          <line
+            x1="${x(previous.date)}"
+            y1="${y(previousValue)}"
+            x2="${x(current.date)}"
+            y2="${y(currentValue)}"
+            class="trend-line chart-readiness"
+          ></line>
+        `;
+
+      }
+
+
+      const readinessPoints =
+        valid
+          .map(
+            item => {
+
+              const value =
+                getMetricValue(
+                  item,
+                  "readiness"
+                );
+
+
+              return `
+                <circle
+                  cx="${x(item.date)}"
+                  cy="${y(value)}"
+                  r="4"
+                  class="chart-readiness-point"
+                ></circle>
+              `;
+
             }
-
-            return `
-              <polyline
-                points="${points}"
-                class="trend-line ${metric.className}"
-              ></polyline>
-            `;
-          })
-          .join("");
+          )
+          .join(
+            ""
+          );
 
 
-      const firstDate =
-        formatDateKey(
-          items[0].date
+      const movingAverage =
+        buildSevenDayReadinessAverage(
+          valid
+        )
+          .filter(
+            item =>
+              Number.isFinite(
+                item.value
+              )
+          );
+
+
+      const movingAveragePoints =
+        movingAverage
+          .map(
+            item =>
+              `${x(item.date)},${y(item.value)}`
+          )
+          .join(
+            " "
+          );
+
+
+      const startLabel =
+        start.toLocaleDateString(
+          "en-US",
+          {
+            month:
+              "short",
+
+            day:
+              "numeric"
+          }
         );
 
-      const lastDate =
-        formatDateKey(
-          items[
-            items.length - 1
-          ].date
+
+      const endLabel =
+        end.toLocaleDateString(
+          "en-US",
+          {
+            month:
+              "short",
+
+            day:
+              "numeric"
+          }
         );
 
 
       return `
+
         <div class="trend-chart-scroll">
 
           <svg
             class="trend-chart"
             viewBox="0 0 ${width} ${height}"
             role="img"
-            aria-label="30 day Neurovia trend chart"
+            aria-label="Brain Readiness over the last 30 days"
           >
 
             ${gridLines}
-            ${lines}
+
+            ${readinessSegments}
+
+            ${
+              movingAveragePoints
+                ? `
+                  <polyline
+                    points="${movingAveragePoints}"
+                    class="trend-line chart-readiness-average"
+                  ></polyline>
+                `
+                : ""
+            }
+
+            ${readinessPoints}
+
 
             <text
               x="${left}"
               y="${height - 8}"
               class="chart-axis-text"
             >
-              ${firstDate}
+              ${startLabel}
             </text>
+
 
             <text
               x="${width - right}"
@@ -1174,7 +1872,7 @@ document.addEventListener(
               text-anchor="end"
               class="chart-axis-text"
             >
-              ${lastDate}
+              ${endLabel}
             </text>
 
           </svg>
@@ -1185,44 +1883,601 @@ document.addEventListener(
         <div class="chart-legend">
 
           <span class="legend-readiness">
-            Readiness
+            Daily Brain Readiness
           </span>
 
-          <span class="legend-recovery">
-            Recovery
-          </span>
-
-          <span class="legend-load">
-            Cognitive Load
-          </span>
-
-          <span class="legend-focus">
-            Focus
+          <span class="legend-readiness-average">
+            7-day average
           </span>
 
         </div>
+
       `;
+
     }
 
 
+    /*
+      ==================================
+      PERSONAL PATTERNS UI
+      ==================================
+    */
+
+
+    function personalPatternCard(
+      eyebrow,
+      title,
+      comparison,
+      explanation,
+      statusClass = ""
+    ) {
+
+      return `
+
+        <div class="card personal-pattern-card ${statusClass}">
+
+          <p class="muted">
+            ${eyebrow}
+          </p>
+
+          <h2>
+            ${title}
+          </h2>
+
+          <div class="pattern-comparison">
+            ${comparison}
+          </div>
+
+          <p class="section-subtitle">
+            ${explanation}
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+
+    function buildPersonalPatternsHTML(
+      patterns
+    ) {
+
+      if (
+        !patterns ||
+        patterns.sampleSize <
+        3
+      ) {
+
+        return `
+
+          <div class="card">
+
+            <p class="muted">
+              PERSONAL PATTERNS
+            </p>
+
+            <h2>
+              Neurovia is still learning your routine.
+            </h2>
+
+            <p class="section-subtitle">
+              Complete more Daily Check-Ins.
+              Personal patterns only appear after
+              Neurovia has enough observations to
+              compare different types of days.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+
+      const cards =
+        [];
+
+
+      /*
+        SCREEN ↔ SLEEP
+      */
+
+
+      if (
+        patterns.screenSleep
+      ) {
+
+        const pattern =
+          patterns.screenSleep;
+
+
+        const difference =
+          Number(
+            pattern.difference
+          );
+
+
+        let title =
+          "No clear screen and sleep pattern yet";
+
+
+        let explanation =
+          "Your available data does not currently show a meaningful difference in sleep quality between lower-screen and higher-screen evenings.";
+
+
+        let statusClass =
+          "pattern-neutral";
+
+
+        if (
+          difference >= 1
+        ) {
+
+          title =
+            "Lower-screen evenings are associated with better sleep quality";
+
+          explanation =
+            `In your recent check-ins, sleep quality was about ${Math.abs(difference).toFixed(1)} point(s) higher after lower-screen evenings. This is a personal association in your data, not proof that screen use caused the difference.`;
+
+          statusClass =
+            "pattern-positive";
+
+        }
+
+
+        else if (
+          difference <= -1
+        ) {
+
+          title =
+            "More screen time has not corresponded to worse sleep in your recent data";
+
+          explanation =
+            `Your recent check-ins do not show the expected lower sleep-quality pattern on higher-screen evenings. Neurovia will keep observing the relationship as more data is added.`;
+
+          statusClass =
+            "pattern-neutral";
+
+        }
+
+
+        cards.push(
+
+          personalPatternCard(
+
+            "SCREEN ↔ SLEEP",
+
+            title,
+
+            `
+              <span>
+                ≤15 min screen:
+                <strong>
+                  ${pattern.lowScreenSleepQuality}/10
+                </strong>
+              </span>
+
+              <span>
+                ≥30 min screen:
+                <strong>
+                  ${pattern.highScreenSleepQuality}/10
+                </strong>
+              </span>
+            `,
+
+            explanation,
+
+            statusClass
+
+          )
+
+        );
+
+      }
+
+
+      /*
+        DISTRACTION ↔ FOCUS
+      */
+
+
+      if (
+        patterns.distractionFocus
+      ) {
+
+        const pattern =
+          patterns.distractionFocus;
+
+
+        const difference =
+          Number(
+            pattern.difference
+          );
+
+
+        let title =
+          "No clear distraction and focus pattern yet";
+
+
+        let explanation =
+          "Your available data does not currently show a meaningful focus difference between lower-distraction and higher-distraction days.";
+
+
+        let statusClass =
+          "pattern-neutral";
+
+
+        if (
+          difference >= 1
+        ) {
+
+          title =
+            "Lower-distraction days are associated with better focus";
+
+          explanation =
+            `Your average Focus was about ${Math.abs(difference).toFixed(1)} point(s) higher on lower-distraction days. Consider protecting a less disruptive environment for your most demanding work.`;
+
+          statusClass =
+            "pattern-positive";
+
+        }
+
+
+        else if (
+          difference <= -1
+        ) {
+
+          title =
+            "Distraction has not corresponded to lower focus in your recent data";
+
+          explanation =
+            "Your recent check-ins do not show lower Focus on higher-distraction days. Neurovia will keep collecting observations before treating this as a stable pattern.";
+
+          statusClass =
+            "pattern-neutral";
+
+        }
+
+
+        cards.push(
+
+          personalPatternCard(
+
+            "DISTRACTION ↔ FOCUS",
+
+            title,
+
+            `
+              <span>
+                Low distraction:
+                <strong>
+                  ${pattern.lowDistractionFocus}/10
+                </strong>
+              </span>
+
+              <span>
+                High distraction:
+                <strong>
+                  ${pattern.highDistractionFocus}/10
+                </strong>
+              </span>
+            `,
+
+            explanation,
+
+            statusClass
+
+          )
+
+        );
+
+      }
+
+
+      /*
+        BREAKS ↔ COGNITIVE LOAD
+      */
+
+
+      if (
+        patterns.breaksLoad
+      ) {
+
+        const pattern =
+          patterns.breaksLoad;
+
+
+        const difference =
+          Number(
+            pattern.difference
+          );
+
+
+        let title =
+          "No clear breaks and Cognitive Load pattern yet";
+
+
+        let explanation =
+          "Your available data does not currently show a meaningful Cognitive Load difference between days with fewer breaks and days with more breaks.";
+
+
+        let statusClass =
+          "pattern-neutral";
+
+
+        if (
+          difference >= 5
+        ) {
+
+          title =
+            "More breaks are associated with lower Cognitive Load";
+
+          explanation =
+            `Days with fewer breaks averaged about ${Math.abs(difference)} more Cognitive Load points in your recent data. When possible, avoid stacking demanding activities without a real break.`;
+
+          statusClass =
+            "pattern-positive";
+
+        }
+
+
+        else if (
+          difference <= -5
+        ) {
+
+          title =
+            "More breaks have not corresponded to lower Cognitive Load yet";
+
+          explanation =
+            "Your current data shows higher Cognitive Load on days with more breaks. That may reflect harder days causing you to take more breaks, so Neurovia should not interpret this as breaks increasing load.";
+
+          statusClass =
+            "pattern-neutral";
+
+        }
+
+
+        cards.push(
+
+          personalPatternCard(
+
+            "BREAKS ↔ COGNITIVE LOAD",
+
+            title,
+
+            `
+              <span>
+                None / few:
+                <strong>
+                  ${pattern.weakBreaksLoad}/100
+                </strong>
+              </span>
+
+              <span>
+                Some / enough:
+                <strong>
+                  ${pattern.goodBreaksLoad}/100
+                </strong>
+              </span>
+            `,
+
+            explanation,
+
+            statusClass
+
+          )
+
+        );
+
+      }
+
+
+      /*
+        SLEEP ↔ ENERGY
+      */
+
+
+      if (
+        patterns.sleepEnergy
+      ) {
+
+        const pattern =
+          patterns.sleepEnergy;
+
+
+        const difference =
+          Number(
+            pattern.difference
+          );
+
+
+        let title =
+          "No clear sleep and energy pattern yet";
+
+
+        let explanation =
+          "Your available data does not currently show a meaningful Energy difference between shorter-sleep days and days when you reached your sleep reference.";
+
+
+        let statusClass =
+          "pattern-neutral";
+
+
+        if (
+          difference >= 1
+        ) {
+
+          title =
+            "Enough sleep is associated with higher energy";
+
+          explanation =
+            `Your Energy averaged about ${Math.abs(difference).toFixed(1)} point(s) higher after nights when you reached your age-based sleep reference.`;
+
+          statusClass =
+            "pattern-positive";
+
+        }
+
+
+        else if (
+          difference <= -1
+        ) {
+
+          title =
+            "More sleep has not corresponded to higher energy in your recent data";
+
+          explanation =
+            "Your current check-ins do not show higher Energy after nights when you reached the sleep-duration reference. Other factors may be contributing, so Neurovia will keep observing the pattern.";
+
+          statusClass =
+            "pattern-neutral";
+
+        }
+
+
+        cards.push(
+
+          personalPatternCard(
+
+            "SLEEP ↔ ENERGY",
+
+            title,
+
+            `
+              <span>
+                Reached sleep reference:
+                <strong>
+                  ${pattern.enoughSleepEnergy}/10
+                </strong>
+              </span>
+
+              <span>
+                Short sleep:
+                <strong>
+                  ${pattern.shortSleepEnergy}/10
+                </strong>
+              </span>
+            `,
+
+            explanation,
+
+            statusClass
+
+          )
+
+        );
+
+      }
+
+
+      if (
+        !cards.length
+      ) {
+
+        return `
+
+          <div class="card">
+
+            <p class="muted">
+              PERSONAL PATTERNS
+            </p>
+
+            <h2>
+              More varied data is needed.
+            </h2>
+
+            <p class="section-subtitle">
+              You already have ${patterns.sampleSize}
+              check-in(s) in the analysis, but Neurovia
+              needs at least three observations in both
+              sides of a comparison before showing a
+              personal pattern.
+            </p>
+
+            <p class="section-subtitle">
+              Keep logging your real days normally.
+              Do not change your answers just to create
+              a comparison.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+
+      return `
+
+        <div class="card">
+
+          <p class="muted">
+            PERSONAL PATTERNS
+          </p>
+
+          <h2>
+            What tends to happen together
+          </h2>
+
+          <p class="section-subtitle">
+            These comparisons use your own recent
+            check-ins. They describe associations
+            in your data and do not establish that
+            one factor caused another.
+          </p>
+
+        </div>
+
+        <div class="personal-pattern-grid">
+          ${cards.join("")}
+        </div>
+
+      `;
+
+    }
+
+
+    /*
+      ==================================
+      IMPROVEMENT RENDER
+      ==================================
+    */
+
+
     function renderImprovement() {
+
       refreshUser();
 
+
       const items =
-        getLast30LoggedDays();
+        getRolling30DayItems();
+
+
+      const patterns =
+        buildPersonalDailyPatterns(
+          user,
+          30
+        );
+
 
       const priority =
         buildImprovementPriority(
           items
         );
 
+
       const weekday =
         getWeekdayAnalysis(
           items
         );
 
+
       const hardestDay =
-        weekday[0];
+        weekday[
+          0
+        ];
+
 
       const readinessTrend =
         buildTrend(
@@ -1230,11 +2485,13 @@ document.addEventListener(
           "readiness"
         );
 
+
       const recoveryTrend =
         buildTrend(
           items,
           "recovery"
         );
+
 
       const loadTrend =
         buildTrend(
@@ -1243,16 +2500,19 @@ document.addEventListener(
           true
         );
 
+
       const focusTrend =
         buildTrend(
           items,
           "focus"
         );
 
+
       const personalRecovery =
         buildPersonalRecoverySuggestion(
           user
         );
+
 
       const topStress =
         getTopStressTags(
@@ -1262,7 +2522,23 @@ document.addEventListener(
         );
 
 
+      const historyMessage =
+        items.length >= 20
+
+          ? `
+            Neurovia is using ${items.length}
+            check-ins from the last 30 calendar days.
+          `
+
+          : `
+            Neurovia currently has ${items.length}
+            check-in(s) from the last 30 calendar days.
+            Your history is still being built.
+          `;
+
+
       improvementTab.innerHTML = `
+
 
         <div class="hero-card">
 
@@ -1275,39 +2551,50 @@ document.addEventListener(
           </h1>
 
           <p class="section-subtitle">
-            This view uses up to 30 logged days
-            to compare Brain Readiness, Recovery,
-            Cognitive Load and Focus. It looks for
-            recurring strain, whether your signals
-            are improving, and which weekdays tend
-            to carry more cognitive demand.
+            ${historyMessage}
+            Missing days are not counted as zero.
+            Neurovia looks for repeated patterns
+            instead of treating one difficult day
+            as a conclusion.
           </p>
 
         </div>
+
+
+        <!-- READINESS GRAPH -->
 
 
         <div class="card">
 
           <p class="muted">
-            30-DAY OVERVIEW
+            30-DAY BRAIN READINESS
           </p>
 
           <h2>
-            Your four main signals
+            Your recent readiness
           </h2>
 
           <p class="section-subtitle">
-            Each line uses the same 0–100 visual scale.
-            Focus is converted from your 1–10 answer to
-            0–100 only for comparison on this chart.
-            Higher Readiness, Recovery and Focus are
-            generally favorable signals; higher Cognitive
-            Load means greater estimated mental demand.
+            The daily points show Brain Readiness
+            on days with a completed check-in.
+            The second line shows the average of
+            available check-ins from the previous
+            seven calendar days.
           </p>
 
-          ${buildChartSVG(items)}
+          <p class="section-subtitle">
+            Missing days are not counted as zero.
+          </p>
+
+
+          ${buildReadinessChartSVG(
+            items
+          )}
 
         </div>
+
+
+        <!-- SUPPORTING TRENDS -->
 
 
         <div class="row two improvement-metrics">
@@ -1339,6 +2626,17 @@ document.addEventListener(
         </div>
 
 
+        <!-- PERSONAL PATTERNS -->
+
+
+        ${buildPersonalPatternsHTML(
+          patterns
+        )}
+
+
+        <!-- MAIN ACTION -->
+
+
         <div class="recommendation-card">
 
           <p class="muted">
@@ -1353,19 +2651,31 @@ document.addEventListener(
             ${priority.text}
           </p>
 
+
           <div class="improvement-steps">
 
             ${
               priority.steps
                 .map(
                   step => `
+
                     <div class="improvement-step">
-                      <i class="mdi mdi-check-circle-outline"></i>
-                      <span>${step}</span>
+
+                      <i
+                        class="mdi mdi-check-circle-outline"
+                      ></i>
+
+                      <span>
+                        ${step}
+                      </span>
+
                     </div>
+
                   `
                 )
-                .join("")
+                .join(
+                  ""
+                )
             }
 
           </div>
@@ -1373,9 +2683,14 @@ document.addEventListener(
         </div>
 
 
+        <!-- WEEKDAY PATTERN -->
+
+
         ${
           hardestDay
+
             ? `
+
               <div class="card">
 
                 <p class="muted">
@@ -1383,26 +2698,27 @@ document.addEventListener(
                 </p>
 
                 <h2>
-                  ${hardestDay.day} currently carries
-                  the highest average cognitive load.
+                  ${hardestDay.day} has carried
+                  the highest repeated Cognitive Load.
                 </h2>
 
                 <p>
-                  Across your available 30-day data,
+                  Across the current 30-day window,
                   ${hardestDay.day} has an average
                   Cognitive Load of
                   ${hardestDay.value}/100
-                  from ${hardestDay.count}
-                  logged occurrence(s).
+                  across ${hardestDay.count}
+                  logged occurrences.
                 </p>
 
                 <p class="section-subtitle">
-                  Neurovia uses this pattern together
-                  with your Brain Calendar so you can
-                  avoid adding unnecessary demanding
-                  events to days that are repeatedly
-                  difficult.
+                  Neurovia only shows a weekday
+                  pattern after at least three
+                  observations of that weekday.
+                  This pattern can also inform
+                  Brain Calendar planning.
                 </p>
+
 
                 <div class="weekday-bars">
 
@@ -1410,42 +2726,81 @@ document.addEventListener(
                     weekday
                       .map(
                         day => `
+
                           <div class="weekday-row">
 
                             <span>
-                              ${day.day.slice(0, 3)}
+                              ${day.day.slice(
+                                0,
+                                3
+                              )}
                             </span>
 
+
                             <div class="weekday-bar-bg">
+
                               <div
                                 class="weekday-bar-fill"
                                 style="
                                   width:${day.value}%;
                                 "
                               ></div>
+
                             </div>
+
 
                             <strong>
                               ${day.value}
                             </strong>
 
                           </div>
+
                         `
                       )
-                      .join("")
+                      .join(
+                        ""
+                      )
                   }
 
                 </div>
 
               </div>
+
             `
-            : ""
+
+            : `
+
+              <div class="card">
+
+                <p class="muted">
+                  WEEKDAY PATTERN
+                </p>
+
+                <h2>
+                  Still building weekday patterns.
+                </h2>
+
+                <p class="section-subtitle">
+                  Neurovia needs at least three
+                  logged occurrences of the same
+                  weekday before treating it as
+                  a repeated weekday pattern.
+                </p>
+
+              </div>
+
+            `
         }
+
+
+        <!-- JOURNAL STRAIN -->
 
 
         ${
           topStress.length
+
             ? `
+
               <div class="card">
 
                 <p class="muted">
@@ -1456,33 +2811,45 @@ document.addEventListener(
                   What has been making days harder
                 </h2>
 
+
                 <div class="journal-tag-row">
 
                   ${
                     topStress
                       .map(
                         item => `
+
                           <span>
                             ${item.tag}
                             ·
                             ${item.count}
                           </span>
+
                         `
                       )
-                      .join("")
+                      .join(
+                        ""
+                      )
                   }
 
                 </div>
 
               </div>
+
             `
+
             : ""
         }
 
 
+        <!-- PERSONAL RECOVERY -->
+
+
         ${
           personalRecovery
+
             ? `
+
               <div class="card personal-recovery-card">
 
                 <p class="muted">
@@ -1504,8 +2871,11 @@ document.addEventListener(
                 </div>
 
               </div>
+
             `
+
             : `
+
               <div class="card">
 
                 <p class="muted">
@@ -1524,12 +2894,13 @@ document.addEventListener(
                 </p>
 
               </div>
+
             `
         }
 
       `;
-    }
 
+    }
 
     /*
       ==================================
