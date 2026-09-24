@@ -1536,622 +1536,1080 @@ document.addEventListener(
       BRAIN CALENDAR
       ==================================
     */
+function renderCalendar() {
+  refreshUser();
 
-    function renderCalendar() {
-      refreshUser();
+  const days =
+    getUpcomingBrainDays(
+      user,
+      14
+    );
 
-      const days =
-        getUpcomingBrainDays(
-          user,
-          14
-        );
+  const personalRecovery =
+    buildPersonalRecoverySuggestion(
+      user
+    );
 
-      const personalRecovery =
-        buildPersonalRecoverySuggestion(
-          user
-        );
 
+  calendarTab.innerHTML = `
 
-      calendarTab.innerHTML = `
+    <div class="hero-card">
 
-        <div class="hero-card">
+      <p class="muted">
+        BRAIN CALENDAR
+      </p>
 
-          <p class="muted">
-            BRAIN CALENDAR
-          </p>
+      <h1 class="section-title">
+        See overload before it happens.
+      </h1>
 
-          <h1 class="section-title">
-            See overload before it happens.
-          </h1>
+      <p class="section-subtitle">
+        Neurovia combines activity type,
+        mental demand, duration, spacing
+        between activities and recent
+        Brain Readiness to estimate planned
+        cognitive workload.
+      </p>
 
-          <p class="section-subtitle">
-            Neurovia combines activity type,
-            mental demand, duration, spacing
-            between activities and recent
-            Brain Readiness to estimate planned
-            cognitive workload.
-          </p>
+    </div>
 
-        </div>
 
+    <div class="card">
 
-        <div class="card">
+      <h2>
+        Add an event
+      </h2>
 
-          <h2>
-            Add an event
-          </h2>
+      <form id="brainEventForm">
 
-          <form id="brainEventForm">
 
+        <div class="input-row">
 
-            <div class="input-row">
+          <label>
+            Event
+          </label>
 
-              <label>
-                Event
-              </label>
+          <div class="input-box">
 
-              <div class="input-box">
+            <i class="mdi mdi-pencil-outline"></i>
 
-                <i class="mdi mdi-pencil-outline"></i>
-
-                <input
-                  id="eventTitle"
-                  type="text"
-                  placeholder="Biology exam"
-                  required
-                >
-
-              </div>
-
-            </div>
-
-
-            <div class="input-row">
-
-              <label>
-                Date
-              </label>
-
-              <div class="input-box">
-
-                <i class="mdi mdi-calendar"></i>
-
-                <input
-                  id="eventDate"
-                  type="date"
-                  min="${todayKey()}"
-                  required
-                >
-
-              </div>
-
-            </div>
-
-
-            <div class="row two">
-
-              <div class="input-row">
-
-                <label>
-                  Starts
-                </label>
-
-                <div class="input-box">
-
-                  <i class="mdi mdi-clock-outline"></i>
-
-                  <input
-                    id="eventStartTime"
-                    type="time"
-                    required
-                  >
-
-                </div>
-
-              </div>
-
-
-              <div class="input-row">
-
-                <label>
-                  Ends
-                </label>
-
-                <div class="input-box">
-
-                  <i class="mdi mdi-clock-outline"></i>
-
-                  <input
-                    id="eventEndTime"
-                    type="time"
-                    required
-                  >
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div class="input-row">
-
-              <label>
-                Activity type
-              </label>
-
-              <div class="input-box">
-
-                <select id="eventType">
-
-                  <option value="Physical Activity">
-                    Physical Activity
-                  </option>
-
-                  <option value="Assignment / Task">
-                    Assignment / Task
-                  </option>
-
-                  <option
-                    value="Studies"
-                    selected
-                  >
-                    Studies
-                  </option>
-
-                  <option value="Exam">
-                    Exam
-                  </option>
-
-                  <option value="Other">
-                    Other
-                  </option>
-
-                </select>
-
-              </div>
-
-              <p class="field-help">
-                Activity type changes the estimated
-                cognitive cost. Physical activity has
-                the lowest cognitive-load weight;
-                exams have the highest.
-              </p>
-
-            </div>
-
-
-            <div class="input-row">
-
-              <label>
-                Mental demand
-              </label>
-
-              <div class="input-box">
-
-                <select id="eventIntensity">
-
-                  <option value="1">
-                    Super Light
-                  </option>
-
-                  <option value="2">
-                    Light
-                  </option>
-
-                  <option
-                    value="3"
-                    selected
-                  >
-                    Moderate
-                  </option>
-
-                  <option value="4">
-                    High
-                  </option>
-
-                  <option value="5">
-                    Super High
-                  </option>
-
-                </select>
-
-              </div>
-
-            </div>
-
-
-            <p
-              id="calendarMessage"
-              class="message-text"
-            ></p>
-
-
-            <button
-              class="primary-btn"
-              type="submit"
+            <input
+              id="eventTitle"
+              type="text"
+              placeholder="Biology exam"
+              required
             >
-              Add to Brain Calendar
-            </button>
-
-          </form>
-
-        </div>
-
-
-        <div class="card">
-
-          <h2>
-            Overload scale
-          </h2>
-
-          <div class="overload-legend">
-
-            <span class="legend-super-light">
-              Super Light
-            </span>
-
-            <span class="legend-light">
-              Light
-            </span>
-
-            <span class="legend-moderate">
-              Moderate
-            </span>
-
-            <span class="legend-high">
-              High
-            </span>
-
-            <span class="legend-super-high">
-              Super High
-            </span>
 
           </div>
 
         </div>
 
 
-        <div class="card">
+        <div class="input-row">
 
-          <h2>
-            Next 14 days
-          </h2>
+          <label>
+            Date
+          </label>
 
-          <div class="brain-calendar-list">
+          <div class="input-box">
 
-            ${
-              days
-                .map(
-                  day => {
+            <i class="mdi mdi-calendar"></i>
 
-                    const date =
-                      dateFromKey(
-                        day.date
-                      );
+            <input
+              id="eventDate"
+              type="date"
+              min="${todayKey()}"
+              required
+            >
 
-                    const label =
-                      date
-                        .toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday:
-                              "short",
+          </div>
 
-                            month:
-                              "short",
+        </div>
 
-                            day:
-                              "numeric"
-                          }
-                        );
 
-                    const overloaded =
-                      day.risk.tier ===
-                        "High" ||
-                      day.risk.tier ===
-                        "Super High";
+        <div class="row two">
 
-                    return `
+          <div class="input-row">
 
-                      <div
-                        class="
-                          calendar-day-card
-                          ${riskClass(
-                            day.risk.tier
-                          )}
-                        "
-                      >
+            <label>
+              Starts
+            </label>
+
+            <div class="input-box">
+
+              <i class="mdi mdi-clock-outline"></i>
+
+              <input
+                id="eventStartTime"
+                type="time"
+                required
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="input-row">
+
+            <label>
+              Ends
+            </label>
+
+            <div class="input-box">
+
+              <i class="mdi mdi-clock-outline"></i>
+
+              <input
+                id="eventEndTime"
+                type="time"
+                required
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="input-row">
+
+          <label>
+            Activity type
+          </label>
+
+          <div class="input-box">
+
+            <select id="eventType">
+
+              <option value="Physical Activity">
+                Physical Activity
+              </option>
+
+              <option value="Assignment / Task">
+                Assignment / Task
+              </option>
+
+              <option
+                value="Studies"
+                selected
+              >
+                Studies
+              </option>
+
+              <option value="Exam">
+                Exam
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+          <p class="field-help">
+            Activity type changes the estimated
+            cognitive cost. Physical activity has
+            the lowest cognitive-load weight;
+            exams have the highest.
+          </p>
+
+        </div>
+
+
+        <div class="input-row">
+
+          <label>
+            Mental demand
+          </label>
+
+          <div class="input-box">
+
+            <select id="eventIntensity">
+
+              <option value="1">
+                Super Light
+              </option>
+
+              <option value="2">
+                Light
+              </option>
+
+              <option
+                value="3"
+                selected
+              >
+                Moderate
+              </option>
+
+              <option value="4">
+                High
+              </option>
+
+              <option value="5">
+                Super High
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- REPEAT -->
+
+        <div class="input-row">
+
+          <label>
+            Repeat
+          </label>
+
+          <div class="input-box">
+
+            <i class="mdi mdi-repeat"></i>
+
+            <select id="eventRepeat">
+
+              <option value="none">
+                Does not repeat
+              </option>
+
+              <option value="daily">
+                Every day
+              </option>
+
+              <option value="weekdays">
+                Every weekday
+              </option>
+
+              <option value="weekly">
+                Every week
+              </option>
+
+              <option value="custom">
+                Custom days
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- CUSTOM WEEKDAYS -->
+
+        <div
+          id="customDaysSection"
+          class="hidden"
+        >
+
+          <label>
+            Repeat on
+          </label>
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:
+                repeat(4, 1fr);
+              gap:8px;
+              margin-top:10px;
+              margin-bottom:18px;
+            "
+          >
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="0"
+              >
+              Sun
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="1"
+              >
+              Mon
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="2"
+              >
+              Tue
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="3"
+              >
+              Wed
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="4"
+              >
+              Thu
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="5"
+              >
+              Fri
+            </label>
+
+            <label class="tag-option">
+              <input
+                type="checkbox"
+                class="repeat-day"
+                value="6"
+              >
+              Sat
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- REPEAT UNTIL -->
+
+        <div
+          id="repeatUntilSection"
+          class="input-row hidden"
+        >
+
+          <label>
+            Repeat until
+          </label>
+
+          <div class="input-box">
+
+            <i class="mdi mdi-calendar-end"></i>
+
+            <input
+              id="eventRepeatUntil"
+              type="date"
+              min="${todayKey()}"
+            >
+
+          </div>
+
+          <p class="field-help">
+            Neurovia will create each occurrence
+            automatically until this date.
+          </p>
+
+        </div>
+
+
+        <p
+          id="calendarMessage"
+          class="message-text"
+        ></p>
+
+
+        <button
+          class="primary-btn"
+          type="submit"
+        >
+          Add to Brain Calendar
+        </button>
+
+      </form>
+
+    </div>
+
+
+    <div class="card">
+
+      <h2>
+        Overload scale
+      </h2>
+
+      <div class="overload-legend">
+
+        <span class="legend-super-light">
+          Super Light
+        </span>
+
+        <span class="legend-light">
+          Light
+        </span>
+
+        <span class="legend-moderate">
+          Moderate
+        </span>
+
+        <span class="legend-high">
+          High
+        </span>
+
+        <span class="legend-super-high">
+          Super High
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h2>
+        Next 14 days
+      </h2>
+
+      <div class="brain-calendar-list">
+
+        ${
+          days
+            .map(
+              day => {
+
+                const date =
+                  dateFromKey(
+                    day.date
+                  );
+
+                const label =
+                  date
+                    .toLocaleDateString(
+                      "en-US",
+                      {
+                        weekday:
+                          "short",
+
+                        month:
+                          "short",
+
+                        day:
+                          "numeric"
+                      }
+                    );
+
+                const overloaded =
+                  day.risk.tier ===
+                    "High" ||
+                  day.risk.tier ===
+                    "Super High";
+
+                return `
+
+                  <div
+                    class="
+                      calendar-day-card
+                      ${riskClass(
+                        day.risk.tier
+                      )}
+                    "
+                  >
+
+                    <div
+                      class="calendar-day-top"
+                    >
+
+                      <div>
+
+                        <strong>
+                          ${label}
+                        </strong>
 
                         <div
-                          class="calendar-day-top"
+                          class="muted"
+                          style="
+                            margin-top:4px;
+                            font-size:12px;
+                          "
                         >
-
-                          <div>
-
-                            <strong>
-                              ${label}
-                            </strong>
-
-                            <div
-                              class="muted"
-                              style="
-                                margin-top:4px;
-                                font-size:12px;
-                              "
-                            >
-                              Estimated load:
-                              ${day.risk.load}
-                            </div>
-
-                          </div>
-
-
-                          <span
-                            class="risk-pill"
-                          >
-                            ${day.risk.tier}
-                          </span>
-
+                          Estimated load:
+                          ${day.risk.load}
                         </div>
 
-
-                        ${
-                          day.events.length
-
-                            ? day.events
-                                .map(
-                                  event => `
-
-                                    <div
-                                      class="calendar-event"
-                                    >
-
-                                      <div>
-
-                                        <strong>
-                                          ${event.title}
-                                        </strong>
-
-                                        <div class="muted">
-                                          ${event.type}
-                                          ·
-                                          ${getIntensityLabel(
-                                            event.intensity
-                                          )}
-                                        </div>
-
-                                        ${
-                                          event.startTime &&
-                                          event.endTime
-
-                                            ? `
-                                              <div
-                                                class="muted"
-                                                style="
-                                                  margin-top:3px;
-                                                  font-size:12px;
-                                                "
-                                              >
-                                                ${formatTime(
-                                                  event.startTime
-                                                )}
-                                                –
-                                                ${formatTime(
-                                                  event.endTime
-                                                )}
-                                                ·
-                                                ${getEventDurationHours(
-                                                  event
-                                                )}h
-                                              </div>
-                                            `
-
-                                            : ""
-                                        }
-
-                                      </div>
-
-
-                                      <button
-                                        class="delete-event-btn"
-                                        data-id="${event.id}"
-                                        type="button"
-                                      >
-                                        ×
-                                      </button>
-
-                                    </div>
-                                  `
-                                )
-                                .join("")
-
-                            : `
-                              <p class="muted">
-                                No events
-                              </p>
-                            `
-                        }
-
-
-                        ${
-                          day.events.length
-                            ? `
-                              <div class="calendar-warning">
-                                ${getCalendarSuggestion(
-                                  day.risk
-                                )}
-                              </div>
-                            `
-                            : ""
-                        }
-
-
-                        ${
-                          overloaded &&
-                          personalRecovery
-
-                            ? `
-                              <div class="calendar-recovery">
-
-                                <strong>
-                                  Personal recovery idea:
-                                </strong>
-
-                                ${personalRecovery.text}
-
-                              </div>
-                            `
-
-                            : ""
-                        }
-
                       </div>
-                    `;
-                  }
-                )
-                .join("")
-            }
-
-          </div>
-
-        </div>
-      `;
 
 
-      document
-        .getElementById(
-          "brainEventForm"
-        )
-        .addEventListener(
-          "submit",
-          function (event) {
+                      <span
+                        class="risk-pill"
+                      >
+                        ${day.risk.tier}
+                      </span>
 
-            event.preventDefault();
+                    </div>
 
-            const message =
-              document.getElementById(
-                "calendarMessage"
-              );
 
-            message.textContent = "";
-            message.classList.remove(
+                    ${
+                      day.events.length
+
+                        ? day.events
+                            .map(
+                              event => `
+
+                                <div
+                                  class="calendar-event"
+                                >
+
+                                  <div>
+
+                                    <strong>
+                                      ${event.title}
+                                    </strong>
+
+                                    <div class="muted">
+                                      ${event.type}
+                                      ·
+                                      ${getIntensityLabel(
+                                        event.intensity
+                                      )}
+                                    </div>
+
+                                    ${
+                                      event.startTime &&
+                                      event.endTime
+
+                                        ? `
+                                          <div
+                                            class="muted"
+                                            style="
+                                              margin-top:3px;
+                                              font-size:12px;
+                                            "
+                                          >
+                                            ${formatTime(
+                                              event.startTime
+                                            )}
+                                            –
+                                            ${formatTime(
+                                              event.endTime
+                                            )}
+                                            ·
+                                            ${getEventDurationHours(
+                                              event
+                                            )}h
+                                          </div>
+                                        `
+
+                                        : ""
+                                    }
+
+                                    ${
+                                      event.seriesId
+
+                                        ? `
+                                          <div
+                                            class="muted"
+                                            style="
+                                              margin-top:3px;
+                                              font-size:11px;
+                                            "
+                                          >
+                                            Repeating event
+                                          </div>
+                                        `
+
+                                        : ""
+                                    }
+
+                                  </div>
+
+
+                                  <button
+                                    class="delete-event-btn"
+                                    data-id="${event.id}"
+                                    type="button"
+                                    aria-label="Delete event"
+                                  >
+                                    ×
+                                  </button>
+
+                                </div>
+                              `
+                            )
+                            .join("")
+
+                        : `
+                          <p class="muted">
+                            No events
+                          </p>
+                        `
+                    }
+
+
+                    ${
+                      day.events.length
+                        ? `
+                          <div class="calendar-warning">
+                            ${getCalendarSuggestion(
+                              day.risk
+                            )}
+                          </div>
+                        `
+                        : ""
+                    }
+
+
+                    ${
+                      overloaded &&
+                      personalRecovery
+
+                        ? `
+                          <div class="calendar-recovery">
+
+                            <strong>
+                              Personal recovery idea:
+                            </strong>
+
+                            ${personalRecovery.text}
+
+                          </div>
+                        `
+
+                        : ""
+                    }
+
+                  </div>
+                `;
+              }
+            )
+            .join("")
+        }
+
+      </div>
+
+    </div>
+  `;
+
+
+  /*
+    ==================================
+    REPEAT CONTROLS
+    ==================================
+  */
+
+  const repeatSelect =
+    document.getElementById(
+      "eventRepeat"
+    );
+
+  const repeatUntilSection =
+    document.getElementById(
+      "repeatUntilSection"
+    );
+
+  const repeatUntilInput =
+    document.getElementById(
+      "eventRepeatUntil"
+    );
+
+  const customDaysSection =
+    document.getElementById(
+      "customDaysSection"
+    );
+
+  const eventDateInput =
+    document.getElementById(
+      "eventDate"
+    );
+
+
+  function updateRepeatControls() {
+    const repeatType =
+      repeatSelect.value;
+
+
+    if (
+      repeatType === "none"
+    ) {
+      repeatUntilSection
+        .classList
+        .add("hidden");
+
+      customDaysSection
+        .classList
+        .add("hidden");
+
+      repeatUntilInput.required =
+        false;
+
+      repeatUntilInput.value =
+        "";
+
+      return;
+    }
+
+
+    repeatUntilSection
+      .classList
+      .remove("hidden");
+
+
+    repeatUntilInput.required =
+      true;
+
+
+    if (
+      eventDateInput.value
+    ) {
+      repeatUntilInput.min =
+        eventDateInput.value;
+    }
+
+
+    if (
+      repeatType === "custom"
+    ) {
+      customDaysSection
+        .classList
+        .remove("hidden");
+    }
+
+    else {
+      customDaysSection
+        .classList
+        .add("hidden");
+    }
+  }
+
+
+  repeatSelect
+    .addEventListener(
+      "change",
+      updateRepeatControls
+    );
+
+
+  eventDateInput
+    .addEventListener(
+      "change",
+      function () {
+
+        if (
+          eventDateInput.value
+        ) {
+          repeatUntilInput.min =
+            eventDateInput.value;
+
+
+          if (
+            repeatUntilInput.value &&
+            repeatUntilInput.value <
+              eventDateInput.value
+          ) {
+            repeatUntilInput.value =
+              "";
+          }
+        }
+
+      }
+    );
+
+
+  updateRepeatControls();
+
+
+  /*
+    ==================================
+    SAVE EVENT
+    ==================================
+  */
+
+  document
+    .getElementById(
+      "brainEventForm"
+    )
+    .addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+
+        const message =
+          document.getElementById(
+            "calendarMessage"
+          );
+
+
+        message.textContent =
+          "";
+
+        message
+          .classList
+          .remove(
+            "error"
+          );
+
+
+        const title =
+          document
+            .getElementById(
+              "eventTitle"
+            )
+            .value
+            .trim();
+
+
+        const date =
+          eventDateInput.value;
+
+
+        const startTime =
+          document
+            .getElementById(
+              "eventStartTime"
+            )
+            .value;
+
+
+        const endTime =
+          document
+            .getElementById(
+              "eventEndTime"
+            )
+            .value;
+
+
+        const repeatType =
+          repeatSelect.value;
+
+
+        const repeatUntil =
+          repeatUntilInput.value;
+
+
+        /*
+          END TIME VALIDATION
+        */
+
+        if (
+          timeToMinutes(
+            endTime
+          ) <=
+          timeToMinutes(
+            startTime
+          )
+        ) {
+          message.textContent =
+            "End time must be later than start time.";
+
+          message
+            .classList
+            .add(
               "error"
             );
 
+          return;
+        }
 
-            const startTime =
+
+        /*
+          REPEAT DATE VALIDATION
+        */
+
+        if (
+          repeatType !==
+            "none" &&
+          !repeatUntil
+        ) {
+          message.textContent =
+            "Choose when this repeating event should end.";
+
+          message
+            .classList
+            .add(
+              "error"
+            );
+
+          return;
+        }
+
+
+        if (
+          repeatType !==
+            "none" &&
+          repeatUntil <
+            date
+        ) {
+          message.textContent =
+            "Repeat until cannot be earlier than the first event date.";
+
+          message
+            .classList
+            .add(
+              "error"
+            );
+
+          return;
+        }
+
+
+        /*
+          CUSTOM WEEKDAYS
+        */
+
+        const customDays =
+          Array
+            .from(
               document
-                .getElementById(
-                  "eventStartTime"
+                .querySelectorAll(
+                  ".repeat-day:checked"
                 )
-                .value;
-
-            const endTime =
-              document
-                .getElementById(
-                  "eventEndTime"
+            )
+            .map(
+              checkbox =>
+                Number(
+                  checkbox.value
                 )
-                .value;
+            );
 
 
-            if (
-              timeToMinutes(
-                endTime
-              ) <=
-              timeToMinutes(
-                startTime
-              )
-            ) {
-              message.textContent =
-                "End time must be later than start time.";
+        if (
+          repeatType ===
+            "custom" &&
+          !customDays.length
+        ) {
+          message.textContent =
+            "Choose at least one day of the week.";
 
-              message.classList.add(
-                "error"
-              );
+          message
+            .classList
+            .add(
+              "error"
+            );
 
-              return;
+          return;
+        }
+
+
+        const updated =
+          getCurrentUserObject();
+
+
+        /*
+          The function in brain-calendar.js
+          creates either one event or an
+          entire recurring series.
+        */
+
+        const created =
+          addRecurringBrainEvents(
+            updated,
+            {
+              title,
+
+              date,
+
+              startTime,
+
+              endTime,
+
+              type:
+                document
+                  .getElementById(
+                    "eventType"
+                  )
+                  .value,
+
+              intensity:
+                Number(
+                  document
+                    .getElementById(
+                      "eventIntensity"
+                    )
+                    .value
+                ),
+
+              repeatType,
+
+              repeatUntil,
+
+              customDays
             }
+          );
 
+
+        updateUser(
+          updated
+        );
+
+
+        /*
+          The form is rebuilt after saving,
+          so there is no stale state.
+        */
+
+        renderCalendar();
+      }
+    );
+
+
+  /*
+    ==================================
+    DELETE ONE OCCURRENCE
+    ==================================
+
+    Deleting an event here removes only
+    that specific occurrence.
+
+    Example:
+    School repeats Mon-Fri.
+    Delete Wednesday -> only Wednesday
+    disappears.
+  */
+
+  document
+    .querySelectorAll(
+      ".delete-event-btn"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function () {
 
             const updated =
               getCurrentUserObject();
 
 
-            addBrainEvent(
+            deleteBrainEvent(
               updated,
-              {
-                title:
-                  document
-                    .getElementById(
-                      "eventTitle"
-                    )
-                    .value
-                    .trim(),
-
-                date:
-                  document
-                    .getElementById(
-                      "eventDate"
-                    )
-                    .value,
-
-                startTime,
-
-                endTime,
-
-                type:
-                  document
-                    .getElementById(
-                      "eventType"
-                    )
-                    .value,
-
-                intensity:
-                  Number(
-                    document
-                      .getElementById(
-                        "eventIntensity"
-                      )
-                      .value
-                  )
-              }
+              button.dataset.id
             );
 
 
-            updateUser(updated);
+            updateUser(
+              updated
+            );
+
+
             renderCalendar();
-          }
-        );
-
-
-      document
-        .querySelectorAll(
-          ".delete-event-btn"
-        )
-        .forEach(
-          button => {
-
-            button.addEventListener(
-              "click",
-              function () {
-
-                const updated =
-                  getCurrentUserObject();
-
-                deleteBrainEvent(
-                  updated,
-                  button.dataset.id
-                );
-
-                updateUser(updated);
-                renderCalendar();
-              }
-            );
 
           }
         );
-    }
+
+      }
+    );
+}
 
 
     /*
