@@ -4417,14 +4417,10 @@ function renderCalendar() {
     }
 
 
-    /*
-      ==================================
-      PROFILE
-      ==================================
-    */
-
     function renderProfile() {
+
       refreshUser();
+
 
       const baselineCount =
         user.baselineHistory
@@ -4458,6 +4454,9 @@ function renderCalendar() {
         </div>
 
 
+        <!-- FIXED PROFILE -->
+
+
         <div class="card">
 
           <div class="profile-title-row">
@@ -4477,7 +4476,16 @@ function renderCalendar() {
           </div>
 
 
+          <p class="section-subtitle">
+            These are the stable profile details
+            Neurovia keeps between check-ins.
+          </p>
+
+
           <div class="profile-grid">
+
+
+            <!-- AGE -->
 
 
             <div class="input-row">
@@ -4494,6 +4502,8 @@ function renderCalendar() {
                 <input
                   id="profileAge"
                   type="number"
+                  min="6"
+                  max="120"
                   value="${
                     user.profile?.age ||
                     ""
@@ -4506,63 +4516,7 @@ function renderCalendar() {
             </div>
 
 
-            <div class="input-row">
-
-              <label>
-                Biological sex
-              </label>
-
-              <div
-                class="input-box locked-field"
-                id="sexBox"
-              >
-
-                <select
-                  id="profileSex"
-                  disabled
-                >
-
-                  <option
-                    value="Female"
-                    ${
-                      user.profile?.sex ===
-                      "Female"
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    Female
-                  </option>
-
-                  <option
-                    value="Male"
-                    ${
-                      user.profile?.sex ===
-                      "Male"
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    Male
-                  </option>
-
-                  <option
-                    value="Prefer not to say"
-                    ${
-                      user.profile?.sex ===
-                      "Prefer not to say"
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    Prefer not to say
-                  </option>
-
-                </select>
-
-              </div>
-
-            </div>
+            <!-- COUNTRY -->
 
 
             <div class="input-row">
@@ -4591,57 +4545,6 @@ function renderCalendar() {
             </div>
 
 
-            <div class="input-row">
-
-              <label>
-                Weight (kg)
-              </label>
-
-              <div
-                class="input-box locked-field"
-                id="weightBox"
-              >
-
-                <input
-                  id="profileWeight"
-                  type="number"
-                  value="${
-                    user.profile?.weight ||
-                    ""
-                  }"
-                  disabled
-                >
-
-              </div>
-
-            </div>
-
-
-            <div class="input-row">
-
-              <label>
-                Height (cm)
-              </label>
-
-              <div
-                class="input-box locked-field"
-                id="heightBox"
-              >
-
-                <input
-                  id="profileHeight"
-                  type="number"
-                  value="${
-                    user.profile?.height ||
-                    ""
-                  }"
-                  disabled
-                >
-
-              </div>
-
-            </div>
-
           </div>
 
 
@@ -4662,6 +4565,9 @@ function renderCalendar() {
         </div>
 
 
+        <!-- BASELINE -->
+
+
         <div class="card">
 
           <h2>
@@ -4669,10 +4575,10 @@ function renderCalendar() {
           </h2>
 
           <p class="section-subtitle">
-            Your baseline is separate from your
-            Daily Check-Ins. Retaking it creates
-            a new baseline record without deleting
-            your previous baseline history.
+            Your baseline describes your usual
+            routine. It is separate from your
+            Daily Check-Ins, which describe what
+            happened on a specific day.
           </p>
 
 
@@ -4691,7 +4597,9 @@ function renderCalendar() {
 
             ${
               user.baseline?.scores
+
                 ? `
+
                   <div class="info-row">
 
                     <strong>
@@ -4705,7 +4613,9 @@ function renderCalendar() {
                     }/100
 
                   </div>
+
                 `
+
                 : ""
             }
 
@@ -4724,6 +4634,9 @@ function renderCalendar() {
         </div>
 
 
+        <!-- DATA -->
+
+
         <div class="card">
 
           <h2>
@@ -4734,33 +4647,43 @@ function renderCalendar() {
           <div class="info-table">
 
             <div class="info-row">
+
               <strong>
                 Daily check-ins:
               </strong>
 
               ${getDates().length}
+
             </div>
 
+
             <div class="info-row">
+
               <strong>
                 Journal entries:
               </strong>
 
               ${
                 user.brainJournal
-                  ?.length || 0
+                  ?.length ||
+                0
               }
+
             </div>
 
+
             <div class="info-row">
+
               <strong>
                 Calendar events:
               </strong>
 
               ${
                 user.brainCalendar
-                  ?.length || 0
+                  ?.length ||
+                0
               }
+
             </div>
 
           </div>
@@ -4776,6 +4699,7 @@ function renderCalendar() {
               View previous days
             </button>
 
+
             <button
               id="weeklyCheckinBtn"
               class="secondary-btn"
@@ -4783,6 +4707,7 @@ function renderCalendar() {
             >
               Weekly Check-In
             </button>
+
 
             <button
               id="logoutBtn"
@@ -4795,40 +4720,41 @@ function renderCalendar() {
           </div>
 
         </div>
+
       `;
 
 
+      /*
+        ==================================
+        FIXED PROFILE EDITING
+        ==================================
+
+        Only Age and Country remain.
+
+        Biological sex, Weight and Height
+        are intentionally no longer part
+        of Neurovia's active profile.
+      */
+
+
       const fixedInputs = [
+
         {
           input:
             "profileAge",
+
           box:
             "ageBox"
         },
-        {
-          input:
-            "profileSex",
-          box:
-            "sexBox"
-        },
+
         {
           input:
             "profileCountry",
+
           box:
             "countryBox"
-        },
-        {
-          input:
-            "profileWeight",
-          box:
-            "weightBox"
-        },
-        {
-          input:
-            "profileHeight",
-          box:
-            "heightBox"
         }
+
       ];
 
 
@@ -4838,6 +4764,7 @@ function renderCalendar() {
         )
         .onclick =
         function () {
+
 
           fixedInputs
             .forEach(
@@ -4850,6 +4777,7 @@ function renderCalendar() {
                   .disabled =
                   false;
 
+
                 document
                   .getElementById(
                     item.box
@@ -4858,6 +4786,7 @@ function renderCalendar() {
                   .remove(
                     "locked-field"
                   );
+
               }
             );
 
@@ -4870,7 +4799,15 @@ function renderCalendar() {
             .remove(
               "hidden-btn"
             );
+
         };
+
+
+      /*
+        ==================================
+        SAVE PROFILE
+        ==================================
+      */
 
 
       document
@@ -4880,14 +4817,17 @@ function renderCalendar() {
         .onclick =
         function () {
 
+
           const updated =
             getCurrentUserObject();
 
+
           updated.profile =
-            updated.profile || {};
+            updated.profile ||
+            {};
 
 
-          updated.profile.age =
+          const age =
             Number(
               document
                 .getElementById(
@@ -4897,15 +4837,7 @@ function renderCalendar() {
             );
 
 
-          updated.profile.sex =
-            document
-              .getElementById(
-                "profileSex"
-              )
-              .value;
-
-
-          updated.profile.country =
+          const country =
             document
               .getElementById(
                 "profileCountry"
@@ -4914,55 +4846,171 @@ function renderCalendar() {
               .trim();
 
 
-          updated.profile.weight =
-            Number(
-              document
-                .getElementById(
-                  "profileWeight"
-                )
-                .value
-            );
-
-
-          updated.profile.height =
-            Number(
-              document
-                .getElementById(
-                  "profileHeight"
-                )
-                .value
+          const editMessage =
+            document.getElementById(
+              "profileEditMessage"
             );
 
 
           /*
-            Keep baseline answers aligned
-            with the fixed profile when
-            these fields already exist.
+            AGE VALIDATION
           */
+
+
           if (
-            updated.onboardingAnswers
+            !Number.isFinite(
+              age
+            ) ||
+            age < 6 ||
+            age > 120
           ) {
-            updated.onboardingAnswers.age =
-              updated.profile.age;
 
-            updated.onboardingAnswers.sex =
-              updated.profile.sex;
+            editMessage.textContent =
+              "Please enter a valid age.";
 
-            updated.onboardingAnswers.country =
-              updated.profile.country;
+            return;
 
-            updated.onboardingAnswers.weight =
-              updated.profile.weight;
-
-            updated.onboardingAnswers.height =
-              updated.profile.height;
           }
 
 
-          updateUser(updated);
+          /*
+            COUNTRY VALIDATION
+          */
+
+
+          if (!country) {
+
+            editMessage.textContent =
+              "Please enter your country.";
+
+            return;
+
+          }
+
+
+          updated.profile.age =
+            age;
+
+
+          updated.profile.country =
+            country;
+
+
+          /*
+            Permanently remove obsolete
+            active profile properties.
+
+            This also cleans profiles
+            created before the redesign.
+          */
+
+
+          delete updated.profile.sex;
+
+          delete updated.profile.weight;
+
+          delete updated.profile.height;
+
+
+          /*
+            Keep current Baseline answers
+            aligned with editable fixed
+            profile information.
+          */
+
+
+          if (
+            updated.onboardingAnswers
+          ) {
+
+            updated.onboardingAnswers.age =
+              age;
+
+
+            updated.onboardingAnswers.country =
+              country;
+
+
+            delete updated
+              .onboardingAnswers
+              .sex;
+
+
+            delete updated
+              .onboardingAnswers
+              .weight;
+
+
+            delete updated
+              .onboardingAnswers
+              .height;
+
+          }
+
+
+          if (
+            updated.baseline
+              ?.answers
+          ) {
+
+            updated.baseline
+              .answers
+              .age =
+              age;
+
+
+            updated.baseline
+              .answers
+              .country =
+              country;
+
+
+            delete updated
+              .baseline
+              .answers
+              .sex;
+
+
+            delete updated
+              .baseline
+              .answers
+              .weight;
+
+
+            delete updated
+              .baseline
+              .answers
+              .height;
+
+          }
+
+
+          /*
+            Keep age/country synchronized
+            with the current baseline
+            context stored in profile.
+
+            Country remains stored for
+            future product use but does
+            not affect current scoring.
+          */
+
+
+          updateUser(
+            updated
+          );
+
 
           renderProfile();
+
         };
+
+
+      /*
+        ==================================
+        BASELINE
+        ==================================
+      */
 
 
       document
@@ -4972,14 +5020,24 @@ function renderCalendar() {
         .onclick =
         function () {
 
+
           sessionStorage.setItem(
             "neurovia_retake_baseline",
             "true"
           );
 
+
           window.location.href =
             "onboarding.html";
+
         };
+
+
+      /*
+        ==================================
+        PREVIOUS DAYS
+        ==================================
+      */
 
 
       document
@@ -4988,9 +5046,19 @@ function renderCalendar() {
         )
         .onclick =
         function () {
+
+
           window.location.href =
             "previous-days.html";
+
         };
+
+
+      /*
+        ==================================
+        WEEKLY CHECK-IN
+        ==================================
+      */
 
 
       document
@@ -4999,9 +5067,19 @@ function renderCalendar() {
         )
         .onclick =
         function () {
+
+
           window.location.href =
             "weekly-checkin.html";
+
         };
+
+
+      /*
+        ==================================
+        LOG OUT
+        ==================================
+      */
 
 
       document
@@ -5011,12 +5089,17 @@ function renderCalendar() {
         .onclick =
         function () {
 
+
           logoutUser();
+
 
           window.location.href =
             "index.html";
+
         };
+
     }
+
 
 
     /*
