@@ -1197,3 +1197,674 @@ textarea {
   }
 
 }
+/* =========================================
+   NEUROVIA - IMPROVEMENT / CALENDAR UPDATE
+   ========================================= */
+
+
+/* Five bottom tabs */
+
+.tabbar {
+  grid-template-columns:
+    repeat(5, 1fr);
+}
+
+.tab-btn {
+  padding:
+    9px 3px;
+}
+
+
+/* =========================================
+   FIVE-LEVEL OVERLOAD SYSTEM
+   ========================================= */
+
+.risk-super-light {
+  border-color:
+    rgba(59, 130, 246, 0.38);
+}
+
+.risk-super-light .risk-pill {
+  color:
+    #60a5fa;
+
+  background:
+    rgba(59, 130, 246, 0.13);
+}
+
+
+.risk-light {
+  border-color:
+    rgba(52, 211, 153, 0.34);
+}
+
+.risk-light .risk-pill {
+  color:
+    #34d399;
+
+  background:
+    rgba(52, 211, 153, 0.12);
+}
+
+
+.risk-moderate {
+  border-color:
+    rgba(250, 204, 21, 0.40);
+}
+
+.risk-moderate .risk-pill {
+  color:
+    #facc15;
+
+  background:
+    rgba(250, 204, 21, 0.12);
+}
+
+
+.risk-high {
+  border-color:
+    rgba(234, 88, 12, 0.48);
+
+  box-shadow:
+    0 0 24px
+    rgba(234, 88, 12, 0.06);
+}
+
+.risk-high .risk-pill {
+  color:
+    #f97316;
+
+  background:
+    rgba(234, 88, 12, 0.13);
+}
+
+
+.risk-super-high {
+  border-color:
+    rgba(220, 20, 60, 0.52);
+
+  box-shadow:
+    0 0 28px
+    rgba(220, 20, 60, 0.08);
+}
+
+.risk-super-high .risk-pill {
+  color:
+    #ff3158;
+
+  background:
+    rgba(220, 20, 60, 0.15);
+}
+
+
+.overload-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.overload-legend span {
+  padding:
+    8px 11px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+}
+
+.legend-super-light {
+  color:
+    #60a5fa;
+
+  background:
+    rgba(59, 130, 246, 0.13);
+}
+
+.legend-light {
+  color:
+    #34d399;
+
+  background:
+    rgba(52, 211, 153, 0.12);
+}
+
+.legend-moderate {
+  color:
+    #facc15;
+
+  background:
+    rgba(250, 204, 21, 0.12);
+}
+
+.legend-high {
+  color:
+    #f97316;
+
+  background:
+    rgba(234, 88, 12, 0.13);
+}
+
+.legend-super-high {
+  color:
+    #ff3158;
+
+  background:
+    rgba(220, 20, 60, 0.15);
+}
+
+
+.field-help {
+  margin:
+    8px 2px 0;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    12px;
+
+  line-height:
+    1.45;
+}
+
+
+.calendar-recovery {
+  margin-top:
+    10px;
+
+  padding:
+    12px;
+
+  border-radius:
+    14px;
+
+  background:
+    rgba(25, 214, 193, 0.07);
+
+  border:
+    1px solid
+    rgba(81, 240, 216, 0.14);
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    13px;
+
+  line-height:
+    1.5;
+}
+
+.calendar-recovery strong {
+  color:
+    var(--accent-2);
+}
+
+
+/* =========================================
+   IMPROVEMENT
+   ========================================= */
+
+.improvement-metrics {
+  margin-bottom:
+    16px;
+}
+
+.improvement-metrics
+.metric-value {
+  font-size:
+    22px;
+
+  text-transform:
+    capitalize;
+}
+
+
+.improvement-steps {
+  display:
+    grid;
+
+  gap:
+    10px;
+
+  margin-top:
+    18px;
+}
+
+.improvement-step {
+  display:
+    flex;
+
+  align-items:
+    flex-start;
+
+  gap:
+    10px;
+
+  padding:
+    12px;
+
+  border-radius:
+    14px;
+
+  background:
+    rgba(255,255,255,0.035);
+
+  line-height:
+    1.5;
+}
+
+.improvement-step i {
+  flex:
+    0 0 auto;
+
+  color:
+    var(--accent-2);
+
+  font-size:
+    19px;
+
+  margin-top:
+    1px;
+}
+
+
+.trend-chart-scroll {
+  width:
+    100%;
+
+  overflow-x:
+    auto;
+
+  -webkit-overflow-scrolling:
+    touch;
+
+  margin-top:
+    12px;
+}
+
+.trend-chart {
+  display:
+    block;
+
+  width:
+    100%;
+
+  min-width:
+    650px;
+
+  height:
+    auto;
+}
+
+
+.chart-grid-line {
+  stroke:
+    rgba(255,255,255,0.08);
+
+  stroke-width:
+    1;
+}
+
+.chart-axis-text {
+  fill:
+    #93a4b8;
+
+  font-size:
+    11px;
+}
+
+
+.trend-line {
+  fill:
+    none;
+
+  stroke-width:
+    4;
+
+  stroke-linecap:
+    round;
+
+  stroke-linejoin:
+    round;
+}
+
+
+.chart-readiness {
+  stroke:
+    #51f0d8;
+}
+
+.chart-recovery {
+  stroke:
+    #60a5fa;
+}
+
+.chart-load {
+  stroke:
+    #f97316;
+}
+
+.chart-focus {
+  stroke:
+    #c084fc;
+}
+
+
+.chart-legend {
+  display:
+    flex;
+
+  flex-wrap:
+    wrap;
+
+  gap:
+    8px;
+
+  margin-top:
+    14px;
+}
+
+.chart-legend span {
+  padding:
+    7px 10px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    700;
+}
+
+
+.legend-readiness {
+  color:
+    #51f0d8;
+
+  background:
+    rgba(81,240,216,0.10);
+}
+
+.legend-recovery {
+  color:
+    #60a5fa;
+
+  background:
+    rgba(96,165,250,0.10);
+}
+
+.legend-load {
+  color:
+    #f97316;
+
+  background:
+    rgba(249,115,22,0.10);
+}
+
+.legend-focus {
+  color:
+    #c084fc;
+
+  background:
+    rgba(192,132,252,0.10);
+}
+
+
+.chart-empty {
+  padding:
+    28px 16px;
+
+  border-radius:
+    16px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  color:
+    var(--text-soft);
+
+  text-align:
+    center;
+
+  line-height:
+    1.5;
+}
+
+
+.weekday-bars {
+  display:
+    grid;
+
+  gap:
+    11px;
+
+  margin-top:
+    18px;
+}
+
+.weekday-row {
+  display:
+    grid;
+
+  grid-template-columns:
+    34px 1fr 32px;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+
+  font-size:
+    12px;
+}
+
+.weekday-row > span {
+  color:
+    var(--text-soft);
+}
+
+.weekday-row > strong {
+  text-align:
+    right;
+}
+
+
+.weekday-bar-bg {
+  height:
+    8px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(255,255,255,0.07);
+
+  overflow:
+    hidden;
+}
+
+.weekday-bar-fill {
+  height:
+    100%;
+
+  border-radius:
+    999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent),
+      #facc15,
+      #f97316
+    );
+}
+
+
+.personal-recovery-card {
+  border-color:
+    rgba(81,240,216,0.24);
+}
+
+
+/* =========================================
+   NEW JOURNAL
+   ========================================= */
+
+.journal-group {
+  padding:
+    16px;
+
+  border-radius:
+    18px;
+
+  margin-bottom:
+    16px;
+
+  background:
+    rgba(255,255,255,0.025);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.06);
+}
+
+.journal-group-title {
+  margin:
+    0 0 4px;
+
+  font-weight:
+    800;
+
+  font-size:
+    17px;
+}
+
+
+.stress-tag
+input:checked + span {
+  color:
+    #ff9b72;
+
+  background:
+    rgba(249,115,22,0.13);
+
+  border-color:
+    rgba(249,115,22,0.40);
+}
+
+
+.recovery-tag
+input:checked + span {
+  color:
+    var(--accent-2);
+
+  background:
+    rgba(25,214,193,0.14);
+
+  border-color:
+    rgba(81,240,216,0.50);
+}
+
+
+.journal-entry-label {
+  margin:
+    13px 0 7px;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    11px;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    1px;
+}
+
+
+.stress-tag-row span {
+  color:
+    #ff9b72;
+
+  background:
+    rgba(249,115,22,0.10);
+}
+
+
+.recovery-tag-row span {
+  color:
+    var(--accent-2);
+
+  background:
+    rgba(81,240,216,0.08);
+}
+
+
+/* =========================================
+   PROFILE
+   ========================================= */
+
+.profile-title-row {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  margin-bottom:
+    14px;
+}
+
+.profile-title-row h2 {
+  margin:
+    0;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 520px) {
+
+  .tab-btn {
+    font-size:
+      10px;
+  }
+
+  .tab-btn i {
+    font-size:
+      20px;
+  }
+
+  .improvement-metrics {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .profile-title-row {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+}
