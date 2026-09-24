@@ -31,14 +31,6 @@ function getEventDurationHours(event) {
     end === null ||
     end <= start
   ) {
-    /*
-      Old events may not have
-      start/end times.
-
-      We use 1 hour as a neutral
-      fallback so old calendar
-      entries still work.
-    */
     return 1;
   }
 
@@ -49,8 +41,6 @@ function getEventDurationHours(event) {
 
 
 function getIntensityLabel(intensity) {
-  const value = Number(intensity);
-
   const labels = {
     1: "Super Light",
     2: "Light",
@@ -59,7 +49,50 @@ function getIntensityLabel(intensity) {
     5: "Super High"
   };
 
-  return labels[value] || "Moderate";
+  return labels[
+    Number(intensity)
+  ] || "Moderate";
+}
+
+
+/*
+  Event type matters separately
+  from the user's mental-demand choice.
+
+  Physical activity receives the
+  smallest cognitive-load multiplier.
+
+  These are Neurovia planning
+  heuristics, not clinical values.
+*/
+function getEventTypeMultiplier(type) {
+  const normalized =
+    String(type || "")
+      .trim()
+      .toLowerCase();
+
+  const multipliers = {
+    "physical activity": 0.45,
+    "activity": 0.45,
+
+    "assignment / task": 0.70,
+    "assignment": 0.70,
+    "task": 0.70,
+
+    "studies": 0.90,
+    "study": 0.90,
+
+    "exam": 1.15,
+
+    "presentation": 1.00,
+
+    "other": 0.80
+  };
+
+  return (
+    multipliers[normalized] ??
+    0.80
+  );
 }
 
 
@@ -140,12 +173,7 @@ function dateDistanceInDays(
         a.getTime() -
         b.getTime()
       ) /
-      (
-        1000 *
-        60 *
-        60 *
-        24
-      )
+      86400000
     )
   );
 }
@@ -177,7 +205,9 @@ function getRecentReadiness(
         );
       })
       .filter(
-        value => value > 0
+        value =>
+          Number.isFinite(value) &&
+          value > 0
       );
 
   if (!values.length) {
@@ -211,38 +241,44 @@ function getEventsAroundDate(
 }
 
 
+function getDurationMultiplier(
+  duration
+) {
+  if (duration <= 0.5) {
+    return 0.55;
+  }
+
+  if (duration <= 1) {
+    return 0.75;
+  }
+
+  if (duration <= 2) {
+    return 1.00;
+  }
+
+  if (duration <= 3) {
+    return 1.20;
+  }
+
+  if (duration <= 4) {
+    return 1.35;
+  }
+
+  return 1.50;
+}
+
+
 /*
-  ==================================================
-  CALENDAR LOAD MODEL
-  ==================================================
+  Base load:
 
-  The calendar no longer treats every event equally.
+  intensity
+  × duration
+  × activity type
 
-  Each event contributes according to:
-
-  1. Mental demand:
-     Super Light = 1
-     Light       = 2
-     Moderate    = 3
-     High        = 4
-     Super High  = 5
-
-  2. Duration:
-     Longer activities contribute more.
-
-  3. Same-day concentration:
-     Several demanding events on the same day
-     add some extra load.
-
-  4. Recent Brain Readiness:
-     Lower recent readiness makes the same
-     workload harder to absorb.
-
-  This is a Neurovia planning heuristic,
-  not a clinical measurement.
+  This deliberately makes the model
+  less aggressive than the previous
+  version.
 */
-
-
 function getEventLoad(event) {
   const intensity =
     Math.max(
@@ -256,46 +292,113 @@ function getEventLoad(event) {
   const duration =
     getEventDurationHours(event);
 
-  /*
-    Duration multiplier grows gradually.
+  const durationMultiplier =
+    getDurationMultiplier(
+      duration
+    );
 
-    30 min  -> about 0.75
-    1 hour  -> 1.00
-    2 hours -> 1.35
-    4 hours -> 1.75
-    6+ hrs  -> capped at 2.00
-
-    This prevents duration from
-    completely dominating intensity.
-  */
-
-  let durationMultiplier;
-
-  if (duration <= 0.5) {
-    durationMultiplier = 0.75;
-  }
-
-  else if (duration <= 1) {
-    durationMultiplier = 1;
-  }
-
-  else if (duration <= 2) {
-    durationMultiplier = 1.35;
-  }
-
-  else if (duration <= 4) {
-    durationMultiplier = 1.75;
-  }
-
-  else {
-    durationMultiplier = 2;
-  }
+  const typeMultiplier =
+    getEventTypeMultiplier(
+      event.type
+    );
 
   return Number(
     (
       intensity *
-      durationMultiplier
+      durationMultiplier *
+      typeMultiplier
     ).toFixed(2)
+  );
+}
+
+
+/*
+  Calculates how close two events
+  are on the same day.
+
+  Only small gaps add extra load.
+
+  0–30 min  = strongest penalty
+  31–60 min = moderate penalty
+  61–120 min = small penalty
+  >120 min = no penalty
+*/
+function getGapPenalty(
+  firstEvent,
+  secondEvent
+) {
+  const firstEnd =
+    timeToMinutes(
+      firstEvent.endTime
+    );
+
+  const secondStart =
+    timeToMinutes(
+      secondEvent.startTime
+    );
+
+  if (
+    firstEnd === null ||
+    secondStart === null
+  ) {
+    return 0;
+  }
+
+  const gap =
+    secondStart - firstEnd;
+
+  if (gap < 0) {
+    return 1.4;
+  }
+
+  if (gap <= 30) {
+    return 1.0;
+  }
+
+  if (gap <= 60) {
+    return 0.65;
+  }
+
+  if (gap <= 120) {
+    return 0.30;
+  }
+
+  return 0;
+}
+
+
+function calculateSpacingLoad(events) {
+  if (events.length < 2) {
+    return 0;
+  }
+
+  const sorted =
+    [...events]
+      .sort(
+        (a, b) =>
+          (
+            a.startTime || ""
+          ).localeCompare(
+            b.startTime || ""
+          )
+      );
+
+  let penalty = 0;
+
+  for (
+    let i = 1;
+    i < sorted.length;
+    i++
+  ) {
+    penalty +=
+      getGapPenalty(
+        sorted[i - 1],
+        sorted[i]
+      );
+  }
+
+  return Number(
+    penalty.toFixed(2)
   );
 }
 
@@ -312,10 +415,19 @@ function calculateCalendarRisk(
     );
 
   const exact =
-    nearby.filter(
-      event =>
-        event.date === targetDate
-    );
+    nearby
+      .filter(
+        event =>
+          event.date === targetDate
+      )
+      .sort(
+        (a, b) =>
+          (
+            a.startTime || ""
+          ).localeCompare(
+            b.startTime || ""
+          )
+      );
 
   const readiness =
     getRecentReadiness(
@@ -323,10 +435,6 @@ function calculateCalendarRisk(
       5
     );
 
-
-  /*
-    TODAY'S LOAD
-  */
 
   const exactLoad =
     exact.reduce(
@@ -338,77 +446,79 @@ function calculateCalendarRisk(
 
 
   /*
-    NEARBY LOAD
-
-    Yesterday/tomorrow matter,
-    but less than the target day.
+    Previous/next day have only
+    a small effect now.
   */
-
-  const nearbyOnly =
-    nearby.filter(
-      event =>
-        event.date !== targetDate
-    );
-
   const nearbyLoad =
-    nearbyOnly.reduce(
-      (sum, event) =>
-        sum +
-        getEventLoad(event) * 0.35,
-      0
+    nearby
+      .filter(
+        event =>
+          event.date !== targetDate
+      )
+      .reduce(
+        (sum, event) =>
+          sum +
+          getEventLoad(event) *
+          0.12,
+        0
+      );
+
+
+  const spacingLoad =
+    calculateSpacingLoad(
+      exact
     );
 
 
   /*
-    Small clustering penalty.
+    Quantity alone should not make
+    two normal activities "High".
 
-    Quantity alone cannot make
-    the day high-risk anymore.
+    A small density penalty starts
+    only when the schedule becomes
+    genuinely crowded.
   */
+  let densityLoad = 0;
 
-  let clusteringLoad = 0;
-
-  if (exact.length >= 3) {
-    clusteringLoad += 1;
+  if (exact.length >= 4) {
+    densityLoad += 0.75;
   }
 
-  if (exact.length >= 5) {
-    clusteringLoad += 1.5;
+  if (exact.length >= 6) {
+    densityLoad += 1.25;
   }
 
 
   /*
-    Brain Readiness modifier.
-
-    Good readiness slightly reduces
-    the estimated planning load.
-
-    Low readiness increases it.
+    Readiness changes the result,
+    but not aggressively enough to
+    turn a normal schedule into High
+    by itself.
   */
-
   let readinessMultiplier = 1;
 
   if (readiness >= 80) {
-    readinessMultiplier = 0.85;
+    readinessMultiplier = 0.90;
   }
 
   else if (readiness >= 65) {
-    readinessMultiplier = 1;
+    readinessMultiplier = 1.00;
   }
 
   else if (readiness >= 50) {
-    readinessMultiplier = 1.15;
+    readinessMultiplier = 1.07;
   }
 
   else {
-    readinessMultiplier = 1.3;
+    readinessMultiplier = 1.14;
   }
 
 
   const rawLoad =
     exactLoad +
     nearbyLoad +
-    clusteringLoad;
+    spacingLoad +
+    densityLoad;
 
 
   const adjustedLoad =
@@ -421,28 +531,28 @@ function calculateCalendarRisk(
 
 
   /*
-    Five overload levels.
+    Recalibrated thresholds.
 
-    These thresholds are product
-    heuristics, not medical limits.
+    High and Super High now require
+    substantially more accumulated
+    cognitive demand.
   */
-
   let tier =
     "Super Light";
 
-  if (adjustedLoad >= 14) {
+  if (adjustedLoad >= 15) {
     tier = "Super High";
   }
 
-  else if (adjustedLoad >= 10) {
+  else if (adjustedLoad >= 10.5) {
     tier = "High";
   }
 
-  else if (adjustedLoad >= 6) {
+  else if (adjustedLoad >= 5.5) {
     tier = "Moderate";
   }
 
-  else if (adjustedLoad >= 3) {
+  else if (adjustedLoad >= 2.5) {
     tier = "Light";
   }
 
@@ -453,11 +563,11 @@ function calculateCalendarRisk(
     load:
       adjustedLoad,
 
-    density:
-      nearby.length,
-
     exactCount:
       exact.length,
+
+    density:
+      nearby.length,
 
     readiness,
 
@@ -471,6 +581,11 @@ function calculateCalendarRisk(
         nearbyLoad.toFixed(1)
       ),
 
+    spacingLoad:
+      Number(
+        spacingLoad.toFixed(1)
+      ),
+
     events:
       nearby
   };
@@ -482,9 +597,8 @@ function getCalendarSuggestion(risk) {
     risk.tier === "Super High"
   ) {
     return (
-      "This looks like a very demanding period based on " +
-      "event duration, mental demand and your recent Brain Readiness. " +
-      "Consider moving, shortening or starting one demanding task earlier."
+      "This is a very demanding schedule. " +
+      "Consider moving one high-demand activity, increasing the gap between demanding events, or starting part of the work earlier."
     );
   }
 
@@ -492,8 +606,8 @@ function getCalendarSuggestion(risk) {
     risk.tier === "High"
   ) {
     return (
-      "This period has a high estimated cognitive workload. " +
-      "Spacing out one demanding activity may make the day more manageable."
+      "This day has a high estimated cognitive workload. " +
+      "A longer recovery gap between demanding activities could make the schedule more manageable."
     );
   }
 
@@ -501,8 +615,8 @@ function getCalendarSuggestion(risk) {
     risk.tier === "Moderate"
   ) {
     return (
-      "Your planned cognitive workload is moderate. " +
-      "The schedule looks manageable, but demanding activities are starting to accumulate."
+      "Your planned workload is moderate. " +
+      "The schedule still looks manageable, but keep recovery time between demanding activities."
     );
   }
 
@@ -511,7 +625,7 @@ function getCalendarSuggestion(risk) {
   ) {
     return (
       "Your planned cognitive workload is light. " +
-      "There is currently little sign of schedule overload."
+      "The current spacing and activity mix do not suggest substantial overload."
     );
   }
 
@@ -577,11 +691,8 @@ function getUpcomingBrainDays(
       );
 
     days.push({
-      date:
-        key,
-
+      date: key,
       events,
-
       risk
     });
   }
